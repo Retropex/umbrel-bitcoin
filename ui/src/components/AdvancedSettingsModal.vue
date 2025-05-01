@@ -1447,9 +1447,7 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Saves unconfirmed transactions in your node's mempool when it's shutting down and reloads them upon startup.
-                  Enabling this setting helps maintain a consistent mempool and prevents the loss of unconfirmed transactions during a restart.
-                  Disabling this setting will clear the mempool upon restart, which may reduce startup time but requires your node to rebuild its mempool from scratch.
+                  Enabling Coinstats Index reduces the time for the gettxoutsetinfo RPC to complete at the cost of using additional disk space.
                 </small>
               </div>
             </b-card-body>
