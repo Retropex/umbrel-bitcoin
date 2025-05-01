@@ -35,6 +35,7 @@ const DEFAULT_ADVANCED_SETTINGS = {
   maxmempool: 300,
   mempoolexpiry: 336,
   persistmempool: true,
+  coinstatsindex: true,
   datacarrier: true,
   datacarriersize: 42,
   permitbaremultisig: false,
@@ -174,6 +175,12 @@ function settingsToMultilineConfString(settings) {
   if (settings.persistmempool) {
     umbrelBitcoinConfig.push("# Save the mempool on shutdown and load on restart.");
     umbrelBitcoinConfig.push('persistmempool=1');
+  }
+
+  // coinstatsindex
+  if (settings.coinstatsindex) {
+    umbrelBitcoinConfig.push("# Maintain coinstats index used by the gettxoutsetinfo RPC.");
+    umbrelBitcoinConfig.push('coinstatsindex=1');
   }
 
   // datacarrier
