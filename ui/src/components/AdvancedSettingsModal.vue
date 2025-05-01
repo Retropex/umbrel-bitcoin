@@ -1423,6 +1423,37 @@
               </div>
             </b-card-body>
 
+            <!-- COINSTATSINDEX -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="coinstatsindex">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Coin Stats Index
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          coinstatsindex
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="coinstatsindex"
+                      class="align-self-center"
+                      :on="settings.coinstatsindex"
+                      @toggle="status => (settings.coinstatsindex = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Saves unconfirmed transactions in your node's mempool when it's shutting down and reloads them upon startup.
+                  Enabling this setting helps maintain a consistent mempool and prevents the loss of unconfirmed transactions during a restart.
+                  Disabling this setting will clear the mempool upon restart, which may reduce startup time but requires your node to rebuild its mempool from scratch.
+                </small>
+              </div>
+            </b-card-body>
+
             <!-- MAXORPHANTX -->
             <b-card-body class="subsetting-body px-2 px-sm-3">
               <div>
