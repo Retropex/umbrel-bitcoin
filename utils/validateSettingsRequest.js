@@ -93,6 +93,9 @@ function validateSettingsRequest(settings) {
   // Persist Mempool
   checkBooleanSetting({ setting: settings.persistmempool, settingName: "Persist Mempool" });
 
+  // Coin Stats Index
+  checkBooleanSetting({ setting: settings.coinstatsindex, settingName: "Coin Stats Index" });
+
   // Datacarrier
   checkBooleanSetting({ setting: settings.datacarrier, settingName: "datacarrier" });
 
