@@ -1423,6 +1423,35 @@
               </div>
             </b-card-body>
 
+            <!-- COINSTATSINDEX -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="coinstatsindex">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Coin Stats Index
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          coinstatsindex
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="coinstatsindex"
+                      class="align-self-center"
+                      :on="settings.coinstatsindex"
+                      @toggle="status => (settings.coinstatsindex = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Enabling Coinstats Index reduces the time for the gettxoutsetinfo RPC to complete at the cost of using additional disk space.
+                </small>
+              </div>
+            </b-card-body>
+
             <!-- MAXORPHANTX -->
             <b-card-body class="subsetting-body px-2 px-sm-3">
               <div>
