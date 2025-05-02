@@ -35,7 +35,7 @@ const DEFAULT_ADVANCED_SETTINGS = {
   maxmempool: 300,
   mempoolexpiry: 336,
   persistmempool: true,
-  coinstatsindex: true,
+  coinstatsindex: false,
   datacarrier: true,
   datacarriersize: 42,
   permitbaremultisig: false,
