@@ -819,7 +819,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="BTC/kB">
                       <b-form-input
                         class="advanced-settings-input"
                         id="minrelaytxfee"
@@ -916,7 +916,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="ancestors">
                       <b-form-input
                         class="advanced-settings-input"
                         id="limitancestorcount"
@@ -948,7 +948,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="kilobytes">
                       <b-form-input
                         class="advanced-settings-input"
                         id="limitancestorsize"
@@ -980,7 +980,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="descendants">
                       <b-form-input
                         class="advanced-settings-input"
                         id="limitdescendantcount"
@@ -1012,7 +1012,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="kilobytes">
                       <b-form-input
                         class="advanced-settings-input"
                         id="limitdescendantsize"
@@ -1105,7 +1105,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="N">
                       <b-form-input
                         class="advanced-settings-input"
                         id="datacarriercost"
@@ -1166,7 +1166,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="BTC/kvB">
                       <b-form-input
                         class="advanced-settings-input"
                         step="0.00001"
@@ -1231,7 +1231,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="WU">
                       <b-form-input
                         class="advanced-settings-input"
                         id="blockmaxweight"
@@ -1263,7 +1263,7 @@
                     </label>
                   </div>
                   <div class="input-container ml-1">
-                    <b-input-group append="bytes">
+                    <b-input-group append="txs">
                       <b-form-input
                         class="advanced-settings-input"
                         id="blockreconstructionextratxn"
