@@ -15,6 +15,7 @@
       </div>
       <loading v-else-if="loading" :progress="loadingProgress"> </loading>
       <!-- component matched by the route will render here -->
+      <invite-settings v-if="showInviteSettings" @close="closeInviteSettings" />
       <router-view v-else></router-view>
     </transition>
   </div>
@@ -27,6 +28,7 @@
 <script>
 import { mapState } from "vuex";
 import Loading from "@/components/Loading";
+import InviteSettings from "@/components/InviteSettings.vue";
 
 export default {
   name: "App",
@@ -35,6 +37,7 @@ export default {
       isIframe: window.self !== window.top,
       loading: true,
       loadingProgress: 0,
+      showInviteSettings: false,
       loadingPollInProgress: false
     };
   },
@@ -52,6 +55,14 @@ export default {
         "--vh100",
         `${window.innerHeight}px`
       );
+    },
+    closeInviteSettings() {
+      this.showInviteSettings = false;
+      fetch("/invite/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ showInviteSettings: false })
+      });
     },
     async getLoadingStatus() {
       // Skip if previous poll in progress or if system is updating
@@ -80,10 +91,17 @@ export default {
       setTimeout(() => (this.loading = false), 300);
     }
   },
-  created() {
+  async created() {
     //for 100vh consistency
     this.updateViewPortHeightCSS();
     window.addEventListener("resize", this.updateViewPortHeightCSS);
+    try {
+      const res = await fetch("/invite/invite");
+      const data = await res.json();
+      this.showInviteSettings = !!data.showInviteSettings;
+    } catch (e) {
+      this.showInviteSettings = true; // fallback
+    }
   },
   watch: {
     loading: {
@@ -111,6 +129,7 @@ export default {
     window.clearInterval(this.loadingInterval);
   },
   components: {
+    InviteSettings,
     Loading
   }
 };

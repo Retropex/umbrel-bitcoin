@@ -13,6 +13,9 @@ const diskService = require('../services/disk'); // CHECK THIS
 const bitcoindLogic = require('../logic/bitcoind');
 const constants = require('../utils/const');
 
+const invite = require('../routes/invite.js');
+app.use('/invite', invite);
+
 // IIFE to check if umbrel-bitcoin.conf is out-of-date (e.g., due to new config options introduced by an app update)
 (async () => {
   const config = await configLogic.getJsonStore();
