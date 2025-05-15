@@ -12,3 +12,5 @@ coverage
 .todo
 data/
 .env.local
+ui/dist
+*.DS_Store
