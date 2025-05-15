@@ -15,6 +15,7 @@
       </div>
       <loading v-else-if="loading" :progress="loadingProgress"> </loading>
       <!-- component matched by the route will render here -->
+      <invite-settings v-if="showInviteSettings" @close="closeInviteSettings" />
       <router-view v-else></router-view>
     </transition>
   </div>
@@ -27,6 +28,7 @@
 <script>
 import { mapState } from "vuex";
 import Loading from "@/components/Loading";
+import InviteSettings from "@/components/InviteSettings.vue";
 
 export default {
   name: "App",
@@ -35,6 +37,7 @@ export default {
       isIframe: window.self !== window.top,
       loading: true,
       loadingProgress: 0,
+      showInviteSettings: false,
       loadingPollInProgress: false
     };
   },
@@ -52,6 +55,9 @@ export default {
         "--vh100",
         `${window.innerHeight}px`
       );
+    },
+    closeInviteSettings() {
+      this.showInviteSettings = false;
     },
     async getLoadingStatus() {
       // Skip if previous poll in progress or if system is updating
@@ -84,6 +90,11 @@ export default {
     //for 100vh consistency
     this.updateViewPortHeightCSS();
     window.addEventListener("resize", this.updateViewPortHeightCSS);
+    const isFirstVisit = !localStorage.getItem("hasVisited");
+    if (isFirstVisit) {
+      this.showInviteSettings = true;
+      localStorage.setItem("hasVisited", "true");
+    }
   },
   watch: {
     loading: {
@@ -111,6 +122,7 @@ export default {
     window.clearInterval(this.loadingInterval);
   },
   components: {
+    InviteSettings,
     Loading
   }
 };
