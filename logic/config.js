@@ -26,7 +26,7 @@ const DEFAULT_ADVANCED_SETTINGS = {
   maxuploadtarget: 0,
   // Optimization
   cacheSizeMB: 450,
-  mempoolFullRbf: false,
+  mempoolFullRbf: true,
   prune: {
     enabled: false,
     pruneSizeGB: 300,
