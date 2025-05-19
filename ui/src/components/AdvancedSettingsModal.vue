@@ -1487,6 +1487,38 @@
               </div>
             </b-card-body>
 
+            <!-- SOFTWAREEXPIRY -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="softwareexpiry">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Software Expiry
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          softwareexpiry
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="softwareexpiry"
+                        type="number"
+                        v-model="settings.softwareexpiry"
+                        number
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Stop working after this POSIX timestamp.
+                </small>
+              </div>
+            </b-card-body>
+
           </b-collapse>
         </b-card>
 
