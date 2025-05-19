@@ -19,6 +19,7 @@ const bitcoind = require('routes/v1/bitcoind/info.js');
 const charts = require('routes/v1/bitcoind/charts.js');
 const system = require('routes/v1/bitcoind/system.js');
 const widgets = require('routes/v1/bitcoind/widgets.js');
+const invite = require('routes/invite.js')
 const ping = require('routes/ping.js');
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/v1/bitcoind/info', charts);
 app.use('/v1/bitcoind/system', system);
 app.use('/v1/bitcoind/widgets', widgets);
 app.use('/ping', ping);
+app.use('/invite', invite)
 
 app.use(errorHandleMiddleware);
 app.use((req, res) => {

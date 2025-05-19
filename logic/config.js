@@ -63,7 +63,8 @@ const DEFAULT_ADVANCED_SETTINGS = {
   rest: false,
   rpcworkqueue: 128,
   // Network Selection
-  network: constants.BITCOIN_DEFAULT_NETWORK
+  network: constants.BITCOIN_DEFAULT_NETWORK,
+  showInviteSettings: true
 }
 
 async function getJsonStore() {
