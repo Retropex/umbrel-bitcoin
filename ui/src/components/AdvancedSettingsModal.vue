@@ -25,616 +25,20 @@
       </b-alert>
 
       <b-overlay :show="isSettingsDisabled" rounded="sm">
-
-        <!-- PEER SETTINGS -->
+        
+        <!-- POLICY -->
         <b-card no-body class="setting-group-container mb-2">
-          <b-card-header v-b-toggle.peer-settings header-tag="header" class="setting-group-header px-2 px-sm-3 d-flex justify-content-between align-items-center" role="tab">
+          <b-card-header v-b-toggle.policy header-tag="header" class="setting-group-header px-2 px-sm-3 d-flex justify-content-between align-items-center" role="tab">
             <div :class="{'fade-in-out': !hasLoadedSettings}">
-              <p class="setting-group-title mb-1 font-weight-bold">Peer Settings</p>
+              <p class="setting-group-title mb-1 font-weight-bold">Policy and block template</p>
               <small class="d-block text-muted">
                 Configure how your node connects and interacts with peers (other nodes) on the network.
               </small>
             </div>
             <b-icon class="when-closed ml-2 text-muted" icon="plus" variant="secondary"></b-icon><b-icon class="when-open ml-2 text-muted" icon="dash" variant="secondary"></b-icon>
           </b-card-header>
-          <b-collapse v-if="hasLoadedSettings" class="setting-group-body bg-light" id="peer-settings" accordion="peer-settings" role="tabpanel">
-
-            <!-- OUTGOING CLEARNET PEERS -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="clearnet">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Outgoing Connections to Clearnet Peers
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          onlynet
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="clearnet"
-                      class="align-self-center"
-                      :on="settings.clearnet"
-                      @toggle="status => (settings.clearnet = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Connect to peers available on the clearnet (publicly accessible internet).
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- OUTGOING TOR PEERS -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="tor">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Outgoing Connections to Tor Peers
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          onlynet
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="tor"
-                      class="align-self-center"
-                      :on="settings.tor"
-                      @toggle="status => (settings.tor = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Connect to peers available on the Tor network.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- CONNECT TO ALL CLEARNET PEERS OVER TOR -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="w-75">
-                    <label class="mb-0" for="proxy">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Make All Outgoing Connections to Clearnet Peers Over Tor
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          proxy
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="proxy"
-                      class="align-self-center"
-                      :on="settings.torProxyForClearnet"
-                      :disabled="isTorProxyDisabled"
-                      :tooltip="torProxyTooltip"
-                      @toggle="status => (settings.torProxyForClearnet = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Connect to peers available on the clearnet via Tor to preserve your anonymity at the cost of slightly less security.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- CONNECT TO I2P PEERS -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="w-75">
-                    <label class="mb-0" for="I2P">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Outgoing Connections to I2P Peers
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          onlynet
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="I2P"
-                      class="align-self-center"
-                      :on="settings.i2p"
-                      @toggle="status => (settings.i2p = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Connect to peers available on the I2P network.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- INCOMING CONNECTIONS -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="w-75">
-                    <label class="mb-0" for="allow-incoming-connections">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Incoming Connections
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          listen | listenonion | i2pacceptincoming
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="allow-incoming-connections"
-                      class="align-self-center"
-                      :on="settings.incomingConnections"
-                      @toggle="status => (settings.incomingConnections = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Broadcast your node to the Bitcoin network to help other nodes 
-                  access the blockchain. You may need to set up port forwarding on 
-                  your router to allow incoming connections from clearnet-only peers.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- PEERBLOCKFILTERS -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="w-75">
-                    <label class="mb-0" for="peerblockfilters">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Peer Block Filters
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          peerblockfilters
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="peerblockfilters"
-                      class="align-self-center"
-                      :on="settings.peerblockfilters"
-                      @toggle="status => (settings.peerblockfilters = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  <p>
-                    Share compact block filter data with connected light clients (like wallets) connected to your node, allowing them to get only the transaction information they are
-                    interested in from your node without having to download the entire blockchain. Enabling this will automatically enable Block Filter Index below. 
-                  </p>
-                  <p class="mb-0">
-                    Note: If you disable Peer Block Filters, you will need to also manually toggle off Block Filter Index if you
-                    want to stop storing block filter data.
-                  </p>
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- BLOCKFILTERINDEX -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="w-75">
-                    <label class="mb-0" for="blockfilterindex">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Block Filter Index
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          blockfilterindex
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="blockfilterindex"
-                      class="align-self-center"
-                      :on="settings.blockfilterindex"
-                      :disabled="isPeerBlockFiltersEnabled"
-                      :tooltip="blockFilterIndexTooltip"
-                      @toggle="status => (settings.blockfilterindex = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  <p>
-                    Store an index of compact block filters which allows faster wallet re-scanning.
-                    In order to serve compact block filters to peers, you must also enable Peer Block Filters above.
-                  </p>
-                  <p class="mb-0">
-                    Note: To use 'Block Filter Index' with a pruned node, you must enable it when you start the 'Prune Old Blocks' process under the Optimization category.
-                    If your node is already pruned and 'Block Filter Index' is off, enabling it will prevent your node from starting. To fix this while keeping 'Block Filter Index' on, you will need to either reindex your node or turn off 'Prune Old Blocks'.
-                  </p>
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- PEERBLOOMFILTERS -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="w-75">
-                    <label class="mb-0" for="peerbloomfilters">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Peer Bloom Filters
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          peerbloomfilters
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="peerbloomfilters"
-                      class="align-self-center"
-                      :on="settings.peerbloomfilters"
-                      @toggle="status => (settings.peerbloomfilters = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  <p>
-                    Enable support for BIP37, a feature used by older light clients (like wallets) to get only the transaction information they are interested in from your node without having to download the entire blockchain.
-                  </p>
-                  <p class="mb-0">
-                    Note: Bloom filters can have privacy and denial-of-service (DoS) risks, especially if your node is publicly reachable; its use is discouraged in favour of the more modern compact block filters.
-                  </p>
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- BANTIME -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="bantime">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Peer Ban Time
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          bantime
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="sec">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="bantime"
-                        type="number"
-                        v-model="settings.bantime"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set the duration (in seconds) that a peer will be banned from connecting to your node if they violate protocol rules or exhibit suspicious behavior.
-                  By adjusting bantime, you can maintain your node's security and network integrity, while preventing repeat offenders from causing disruptions.
-                  A longer bantime increases the ban period, discouraging misbehavior, while a shorter bantime allows for quicker reconnections but may require more frequent manual monitoring of peer activity.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- MAXCONNECTIONS -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="maxconnections">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max Peer Connections
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          maxconnections
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group>
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="maxconnections"
-                        type="number"
-                        v-model="settings.maxconnections"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set the maximum number of peers your node can connect to simultaneously. By managing this, you can optimize your node's network usage and system resources based on your device's capacity.
-                  A higher value enables your node to maintain more connections, potentially improving network stability and data sharing. A lower value conserves system resources and bandwidth,
-                  which may be beneficial for devices with limited capabilities.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- MAXRECEIVEBUFFER -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="maxreceivebuffer">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max Receive Buffer
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          maxreceivebuffer
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="KB">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="maxreceivebuffer"
-                        type="number"
-                        v-model="settings.maxreceivebuffer"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set the maximum amount of memory (in kilobytes) allocated for storing incoming data from other nodes in the network.
-                  A larger buffer size allows your node to handle more incoming data simultaneously, while a smaller size reduces memory consumption but may limit the amount of data your node can process at once.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- MAXSENDBUFFER -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="maxsendbuffer">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max Send Buffer
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          maxsendbuffer
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="KB">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="maxsendbuffer"
-                        type="number"
-                        v-model="settings.maxsendbuffer"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set the maximum memory (in kilobytes) dedicated to storing outgoing data sent to other nodes in the network.
-                  A larger buffer size enables your node to send more data simultaneously, while a smaller size conserves memory but may
-                  restrict the volume of data your node can transmit at once.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- MAXTIMEADJUSTMENT -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="maxtimeadjustment">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max Time Adjustment
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          maxtimeadjustment
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="sec">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="maxtimeadjustment"
-                        type="number"
-                        v-model="settings.maxtimeadjustment"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set the maximum allowed time adjustment (in seconds) your node can make based on the time data received from other nodes in the network.
-                  By controlling it, you can maintain your node's time accuracy while reducing the risk of incorrect time adjustments that could affect block validation and other time-sensitive processes.
-                  A lower value provides a stricter limit on time corrections, while a higher value allows more flexibility based on network data.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- PEERTIMEOUT -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="peertimeout">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Peer Timeout
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          peertimeout
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="sec">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="peertimeout"
-                        type="number"
-                        v-model="settings.peertimeout"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set the maximum time (in seconds) that your node will wait for a response from a connected peer before considering it unresponsive and disconnecting.
-                  Adjusting peertimeout helps you maintain stable connections with responsive peers while ensuring your node doesn't waste resources on unresponsive ones.
-                  A shorter timeout value allows for quicker disconnection from unresponsive peers, while a longer timeout provides more time for slow-responding peers to maintain a connection.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- TIMEOUT -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="timeout">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Connection Timeout
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          timeout
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="ms">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="timeout"
-                        type="number"
-                        v-model="settings.timeout"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set the maximum time (in seconds) that your node will wait for a response from a newly connecting peer during the initial handshake process before considering it unresponsive and disconnecting.
-                  Fine-tuning it helps you ensure your node establishes stable connections with responsive peers while avoiding unresponsive ones. A shorter timeout value leads to faster disconnection from unresponsive peers,
-                  while a longer timeout allows more time for slow-responding peers to complete the handshake.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- MAX UPLOAD TARGET -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="maxuploadtarget">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max Upload Target
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          maxuploadtarget
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="MB/24hr">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="maxuploadtarget"
-                        type="number"
-                        v-model="settings.maxuploadtarget"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  <p>
-                    Limit the maximum amount of data (in MB) your node will upload to other peers in the network within a 24-hour period. Setting this to 0 (default) means that there is no limit.
-                    By adjusting it, you can optimize your node's bandwidth usage and maintain a balance between sharing data with the network and conserving your internet resources.
-                    A higher upload target allows your node to contribute more data to the network, while a lower target helps you save bandwidth for other uses.
-                  </p>
-                  <p class="mb-0">
-                    Note: Peers that are whitelisted are exempt from this limit. By default, your node whitelists apps on your Umbrel (e.g., Electrs).
-                    However, external apps and wallets that are connected via the P2P port may fail to receive data from your node if your node hits the 24-hour upload limit.
-                  </p>
-                </small>
-              </div>
-            </b-card-body>
-
-          </b-collapse>
-        </b-card>
-
-         <!-- OPTIMIZATION SETTINGS -->
-         <b-card no-body class="setting-group-container mb-2">
-          <b-card-header v-b-toggle.optimization-settings header-tag="header" class="setting-group-header px-2 px-sm-3 d-flex justify-content-between align-items-center" role="tab">
-            <!-- IMPLEMENT HASLOADEDSETTINGS -->
-            <div :class="{'fade-in-out': !hasLoadedSettings}">
-              <p class="setting-group-title mb-1 font-weight-bold">Optimization</p>
-              <small class="d-block text-muted">
-                Fine tune the performance and resource usage of your node.
-              </small>
-            </div>
-            <b-icon class="when-closed ml-2 text-muted" icon="plus" variant="secondary"></b-icon><b-icon class="when-open ml-2 text-muted" icon="dash" variant="secondary"></b-icon>
-          </b-card-header>
-          <b-collapse v-if="hasLoadedSettings" class="setting-group-body bg-light" id="optimization-settings" accordion="optimization-settings" role="tabpanel">
+          <b-collapse v-if="hasLoadedSettings" class="setting-group-body bg-light" id="policy" accordion="policy" role="tabpanel">
           
-            <!-- DB CACHE -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="cache-size">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Cache Size
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          dbcache
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="MB">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="cache-size"
-                        type="number"
-                        v-model="settings.cacheSizeMB"
-                        number
-                        autocomplete="off"
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Choose the size of the UTXO set to store in RAM. A larger cache can 
-                  speed up the initial synchronization of your Bitcoin node, but after 
-                  the initial sync is complete, a larger cache value does not significantly 
-                  improve performance and may use more RAM than needed.
-                </small>
-              </div>
-            </b-card-body>
-
             <!-- RBF -->
             <!-- consider move to a Transactions accordion group -->
             <b-card-body class="subsetting-body px-2 px-sm-3">
@@ -1289,6 +693,618 @@
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
                   Set maximum BIP141 block weight.
+                </small>
+              </div>
+            </b-card-body>
+          
+          </b-collapse>
+        </b-card>
+
+        <!-- PEER SETTINGS -->
+        <b-card no-body class="setting-group-container mb-2">
+          <b-card-header v-b-toggle.peer-settings header-tag="header" class="setting-group-header px-2 px-sm-3 d-flex justify-content-between align-items-center" role="tab">
+            <div :class="{'fade-in-out': !hasLoadedSettings}">
+              <p class="setting-group-title mb-1 font-weight-bold">Peer Settings</p>
+              <small class="d-block text-muted">
+                Configure how your node connects and interacts with peers (other nodes) on the network.
+              </small>
+            </div>
+            <b-icon class="when-closed ml-2 text-muted" icon="plus" variant="secondary"></b-icon><b-icon class="when-open ml-2 text-muted" icon="dash" variant="secondary"></b-icon>
+          </b-card-header>
+          <b-collapse v-if="hasLoadedSettings" class="setting-group-body bg-light" id="peer-settings" accordion="peer-settings" role="tabpanel">
+
+            <!-- OUTGOING CLEARNET PEERS -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="clearnet">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Outgoing Connections to Clearnet Peers
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          onlynet
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="clearnet"
+                      class="align-self-center"
+                      :on="settings.clearnet"
+                      @toggle="status => (settings.clearnet = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Connect to peers available on the clearnet (publicly accessible internet).
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- OUTGOING TOR PEERS -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="tor">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Outgoing Connections to Tor Peers
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          onlynet
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="tor"
+                      class="align-self-center"
+                      :on="settings.tor"
+                      @toggle="status => (settings.tor = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Connect to peers available on the Tor network.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- CONNECT TO ALL CLEARNET PEERS OVER TOR -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="w-75">
+                    <label class="mb-0" for="proxy">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Make All Outgoing Connections to Clearnet Peers Over Tor
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          proxy
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="proxy"
+                      class="align-self-center"
+                      :on="settings.torProxyForClearnet"
+                      :disabled="isTorProxyDisabled"
+                      :tooltip="torProxyTooltip"
+                      @toggle="status => (settings.torProxyForClearnet = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Connect to peers available on the clearnet via Tor to preserve your anonymity at the cost of slightly less security.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- CONNECT TO I2P PEERS -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="w-75">
+                    <label class="mb-0" for="I2P">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Outgoing Connections to I2P Peers
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          onlynet
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="I2P"
+                      class="align-self-center"
+                      :on="settings.i2p"
+                      @toggle="status => (settings.i2p = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Connect to peers available on the I2P network.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- INCOMING CONNECTIONS -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="w-75">
+                    <label class="mb-0" for="allow-incoming-connections">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Incoming Connections
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          listen | listenonion | i2pacceptincoming
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="allow-incoming-connections"
+                      class="align-self-center"
+                      :on="settings.incomingConnections"
+                      @toggle="status => (settings.incomingConnections = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Broadcast your node to the Bitcoin network to help other nodes 
+                  access the blockchain. You may need to set up port forwarding on 
+                  your router to allow incoming connections from clearnet-only peers.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- PEERBLOCKFILTERS -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="w-75">
+                    <label class="mb-0" for="peerblockfilters">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Peer Block Filters
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          peerblockfilters
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="peerblockfilters"
+                      class="align-self-center"
+                      :on="settings.peerblockfilters"
+                      @toggle="status => (settings.peerblockfilters = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  <p>
+                    Share compact block filter data with connected light clients (like wallets) connected to your node, allowing them to get only the transaction information they are
+                    interested in from your node without having to download the entire blockchain. Enabling this will automatically enable Block Filter Index below. 
+                  </p>
+                  <p class="mb-0">
+                    Note: If you disable Peer Block Filters, you will need to also manually toggle off Block Filter Index if you
+                    want to stop storing block filter data.
+                  </p>
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- BLOCKFILTERINDEX -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="w-75">
+                    <label class="mb-0" for="blockfilterindex">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Block Filter Index
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          blockfilterindex
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="blockfilterindex"
+                      class="align-self-center"
+                      :on="settings.blockfilterindex"
+                      :disabled="isPeerBlockFiltersEnabled"
+                      :tooltip="blockFilterIndexTooltip"
+                      @toggle="status => (settings.blockfilterindex = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  <p>
+                    Store an index of compact block filters which allows faster wallet re-scanning.
+                    In order to serve compact block filters to peers, you must also enable Peer Block Filters above.
+                  </p>
+                  <p class="mb-0">
+                    Note: To use 'Block Filter Index' with a pruned node, you must enable it when you start the 'Prune Old Blocks' process under the Optimization category.
+                    If your node is already pruned and 'Block Filter Index' is off, enabling it will prevent your node from starting. To fix this while keeping 'Block Filter Index' on, you will need to either reindex your node or turn off 'Prune Old Blocks'.
+                  </p>
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- PEERBLOOMFILTERS -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="w-75">
+                    <label class="mb-0" for="peerbloomfilters">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Peer Bloom Filters
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          peerbloomfilters
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="peerbloomfilters"
+                      class="align-self-center"
+                      :on="settings.peerbloomfilters"
+                      @toggle="status => (settings.peerbloomfilters = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  <p>
+                    Enable support for BIP37, a feature used by older light clients (like wallets) to get only the transaction information they are interested in from your node without having to download the entire blockchain.
+                  </p>
+                  <p class="mb-0">
+                    Note: Bloom filters can have privacy and denial-of-service (DoS) risks, especially if your node is publicly reachable; its use is discouraged in favour of the more modern compact block filters.
+                  </p>
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- BANTIME -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="bantime">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Peer Ban Time
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          bantime
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="sec">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="bantime"
+                        type="number"
+                        v-model="settings.bantime"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set the duration (in seconds) that a peer will be banned from connecting to your node if they violate protocol rules or exhibit suspicious behavior.
+                  By adjusting bantime, you can maintain your node's security and network integrity, while preventing repeat offenders from causing disruptions.
+                  A longer bantime increases the ban period, discouraging misbehavior, while a shorter bantime allows for quicker reconnections but may require more frequent manual monitoring of peer activity.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- MAXCONNECTIONS -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="maxconnections">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max Peer Connections
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          maxconnections
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group>
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="maxconnections"
+                        type="number"
+                        v-model="settings.maxconnections"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set the maximum number of peers your node can connect to simultaneously. By managing this, you can optimize your node's network usage and system resources based on your device's capacity.
+                  A higher value enables your node to maintain more connections, potentially improving network stability and data sharing. A lower value conserves system resources and bandwidth,
+                  which may be beneficial for devices with limited capabilities.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- MAXRECEIVEBUFFER -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="maxreceivebuffer">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max Receive Buffer
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          maxreceivebuffer
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="KB">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="maxreceivebuffer"
+                        type="number"
+                        v-model="settings.maxreceivebuffer"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set the maximum amount of memory (in kilobytes) allocated for storing incoming data from other nodes in the network.
+                  A larger buffer size allows your node to handle more incoming data simultaneously, while a smaller size reduces memory consumption but may limit the amount of data your node can process at once.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- MAXSENDBUFFER -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="maxsendbuffer">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max Send Buffer
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          maxsendbuffer
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="KB">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="maxsendbuffer"
+                        type="number"
+                        v-model="settings.maxsendbuffer"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set the maximum memory (in kilobytes) dedicated to storing outgoing data sent to other nodes in the network.
+                  A larger buffer size enables your node to send more data simultaneously, while a smaller size conserves memory but may
+                  restrict the volume of data your node can transmit at once.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- MAXTIMEADJUSTMENT -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="maxtimeadjustment">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max Time Adjustment
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          maxtimeadjustment
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="sec">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="maxtimeadjustment"
+                        type="number"
+                        v-model="settings.maxtimeadjustment"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set the maximum allowed time adjustment (in seconds) your node can make based on the time data received from other nodes in the network.
+                  By controlling it, you can maintain your node's time accuracy while reducing the risk of incorrect time adjustments that could affect block validation and other time-sensitive processes.
+                  A lower value provides a stricter limit on time corrections, while a higher value allows more flexibility based on network data.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- PEERTIMEOUT -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="peertimeout">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Peer Timeout
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          peertimeout
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="sec">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="peertimeout"
+                        type="number"
+                        v-model="settings.peertimeout"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set the maximum time (in seconds) that your node will wait for a response from a connected peer before considering it unresponsive and disconnecting.
+                  Adjusting peertimeout helps you maintain stable connections with responsive peers while ensuring your node doesn't waste resources on unresponsive ones.
+                  A shorter timeout value allows for quicker disconnection from unresponsive peers, while a longer timeout provides more time for slow-responding peers to maintain a connection.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- TIMEOUT -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="timeout">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Connection Timeout
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          timeout
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="ms">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="timeout"
+                        type="number"
+                        v-model="settings.timeout"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set the maximum time (in seconds) that your node will wait for a response from a newly connecting peer during the initial handshake process before considering it unresponsive and disconnecting.
+                  Fine-tuning it helps you ensure your node establishes stable connections with responsive peers while avoiding unresponsive ones. A shorter timeout value leads to faster disconnection from unresponsive peers,
+                  while a longer timeout allows more time for slow-responding peers to complete the handshake.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- MAX UPLOAD TARGET -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="maxuploadtarget">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max Upload Target
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          maxuploadtarget
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="MB/24hr">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="maxuploadtarget"
+                        type="number"
+                        v-model="settings.maxuploadtarget"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  <p>
+                    Limit the maximum amount of data (in MB) your node will upload to other peers in the network within a 24-hour period. Setting this to 0 (default) means that there is no limit.
+                    By adjusting it, you can optimize your node's bandwidth usage and maintain a balance between sharing data with the network and conserving your internet resources.
+                    A higher upload target allows your node to contribute more data to the network, while a lower target helps you save bandwidth for other uses.
+                  </p>
+                  <p class="mb-0">
+                    Note: Peers that are whitelisted are exempt from this limit. By default, your node whitelists apps on your Umbrel (e.g., Electrs).
+                    However, external apps and wallets that are connected via the P2P port may fail to receive data from your node if your node hits the 24-hour upload limit.
+                  </p>
+                </small>
+              </div>
+            </b-card-body>
+
+          </b-collapse>
+        </b-card>
+
+         <!-- OPTIMIZATION SETTINGS -->
+         <b-card no-body class="setting-group-container mb-2">
+          <b-card-header v-b-toggle.optimization-settings header-tag="header" class="setting-group-header px-2 px-sm-3 d-flex justify-content-between align-items-center" role="tab">
+            <!-- IMPLEMENT HASLOADEDSETTINGS -->
+            <div :class="{'fade-in-out': !hasLoadedSettings}">
+              <p class="setting-group-title mb-1 font-weight-bold">Optimization</p>
+              <small class="d-block text-muted">
+                Fine tune the performance and resource usage of your node.
+              </small>
+            </div>
+            <b-icon class="when-closed ml-2 text-muted" icon="plus" variant="secondary"></b-icon><b-icon class="when-open ml-2 text-muted" icon="dash" variant="secondary"></b-icon>
+          </b-card-header>
+          <b-collapse v-if="hasLoadedSettings" class="setting-group-body bg-light" id="optimization-settings" accordion="optimization-settings" role="tabpanel">
+          
+            <!-- DB CACHE -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="cache-size">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Cache Size
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          dbcache
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="MB">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="cache-size"
+                        type="number"
+                        v-model="settings.cacheSizeMB"
+                        number
+                        autocomplete="off"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Choose the size of the UTXO set to store in RAM. A larger cache can 
+                  speed up the initial synchronization of your Bitcoin node, but after 
+                  the initial sync is complete, a larger cache value does not significantly 
+                  improve performance and may use more RAM than needed.
                 </small>
               </div>
             </b-card-body>
