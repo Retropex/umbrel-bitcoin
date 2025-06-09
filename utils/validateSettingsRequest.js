@@ -160,9 +160,6 @@ function validateSettingsRequest(settings) {
   // No min or max specified. 
   checkNumberSetting({ setting: settings.maxorphantx, settingName: "Max Orphan Transactions", min: 0 });
 
-  // Software Expiry
-  checkNumberSetting({ setting: settings.softwareexpiry, settingName: "Software Expiry", min: 0 });
-
   // Public REST API
   checkBooleanSetting({ setting: settings.rest, settingName: "Public REST API" });
 

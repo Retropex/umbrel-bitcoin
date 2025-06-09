@@ -57,7 +57,6 @@ const DEFAULT_ADVANCED_SETTINGS = {
   blockmaxweight: 3985000,
   blockreconstructionextratxn: 1000000,
   maxorphantx: 100,
-  softwareexpiry: 1825593420,
   reindex: false,
   // RPC/REST
   rest: false,
@@ -280,10 +279,6 @@ function settingsToMultilineConfString(settings) {
   // maxorphantx
   umbrelBitcoinConfig.push("# Maximum number of orphan transactions to be kept in memory.");
   umbrelBitcoinConfig.push(`maxorphantx=${settings.maxorphantx}`);
-
-  // softwareexpiry
-  umbrelBitcoinConfig.push("# Stop working after this POSIX timestamp.");
-  umbrelBitcoinConfig.push(`softwareexpiry=${settings.softwareexpiry}`)
 
   // reindex
   if (settings.reindex) {

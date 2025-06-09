@@ -3,7 +3,18 @@
     <div
       class="px-0 px-sm-3 pb-3 d-flex flex-column justify-content-between w-100"
     >
-      <h3 class="mt-1">Advanced Settings</h3>
+      <div class="d-flex align-items-center justify-content-between mt-1 mb-2">
+        <h3 class="mb-0">Advanced Settings</h3>
+        <div class="d-flex align-items-center">
+          <toggle-switch
+            id="show-hints"
+            :on="showHints"
+            @toggle="showHints = $event"
+            class="mr-2"
+          ></toggle-switch>
+          <span>Show pleb hints</span>
+        </div>
+      </div>
       <b-alert variant="warning" show class="mb-3">
         <small>
           Be careful when changing the settings below as they may cause issues 
@@ -650,7 +661,10 @@
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
                   Allow any transaction in the mempool of your Bitcoin node to be replaced with
-                  a newer version of the same transaction that includes a higher fee.
+                  a newer version of the same transaction that includes a higher fee.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: This lets you incite a miner to take your transaction faster by adding more fee to it.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -679,7 +693,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Relay and mine data carrier transactions.
+                  Relay and mine data carrier transactions.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Remove shitcoins and JPEGs from your mempool/block template.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -706,13 +723,17 @@
                         type="number"
                         v-model="settings.datacarriersize"
                         number
+                        :disabled="!settings.datacarrier"
                       ></b-form-input>
                     </b-input-group>
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Adjust the maximum size of relayed transactions containing arbitrary data. 
-                  Note: datacarrier takes precedence over datacarriersize.
+                  Adjust the maximum size of relayed transactions containing arbitrary data.<br>
+                  Note: datacarrier takes precedence over datacarriersize.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: The maximum size of JPEGs and other data you want to relay/mine.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -741,7 +762,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Reject parasitic transactions that are non-monetary.
+                  Reject parasitic transactions that are non-monetary.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Relay/mine non-monetary bitcoin transactions that do NOT contain arbitrary data.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -770,7 +794,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Reject token transactions (runes).
+                  Reject token transactions (runes).<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Relay/mine runes shitcoins.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -799,7 +826,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Relay non-P2SH multisig.
+                  Relay non-P2SH multisig.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Initially used for multisig, today P2MS is used to arbitrarily add data to the chain in the worst way possible.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -832,7 +862,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation
+                  Fee rates (in BTC/kB) smaller than this are considered zero fee for relaying, mining and transaction creation.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: You won't mine/relay transactions that pay less fees than this value.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -1053,7 +1086,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Relay legacy pubkey outputs.
+                  Relay legacy pubkey outputs.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Like with P2MS, it was supposed to be used to pay someone, but today it's largely used to add arbitrary data in a very bad way.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -1085,7 +1121,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Maximum size of scripts we relay and mine, in bytes
+                  Maximum size of scripts we relay and mine, in bytes<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: In a Bitcoin transaction the script is the thing that define which signatures can spend the funds.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -1117,7 +1156,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Treat extra data in transactions as at least N vbytes per actual byte
+                  Treat extra data in transactions as at least N vbytes per actual byte<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Apply a premium on spam. The higher the value, the more fees spam has to pay to enter your mempool.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -1129,7 +1171,7 @@
                   <div class="flex-sm-grow-1">
                     <label class="mb-0" for="mempool">
                       <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Datacarrier cost
+                        Accept non standard datacarrier
                         <span class="subsetting-config-name text-monospace font-weight-normal d-block">
                           acceptnonstddatacarrier
                         </span>
@@ -1146,7 +1188,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Treat extra data in transactions as at least N vbytes per actual byte
+                  Relay and mine non-OP_RETURN datacarrier injection<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Enabling this will let inscriptions still pass the datacarrier filter.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -1211,7 +1256,7 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Set maximum block size in bytes
+                  Set maximum block size in bytes.
                 </small>
               </div>
             </b-card-body>
@@ -1243,7 +1288,7 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Set maximum BIP141 block weight
+                  Set maximum BIP141 block weight.
                 </small>
               </div>
             </b-card-body>
@@ -1275,7 +1320,10 @@
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Extra transactions to keep in memory for compact block reconstructions
+                  Extra transactions to keep in memory for compact block reconstructions<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: The higher the value, the faster the blocks will potentially be validated at the cost of greater memory consumption.
+                  </div>
                 </small>
               </div>
             </b-card-body>
@@ -1496,7 +1544,6 @@
                       <p class="subsetting-title font-weight-bold mb-0 mr-1">
                         Software Expiry
                         <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          softwareexpiry
                         </span>
                       </p>
                     </label>
@@ -1506,15 +1553,15 @@
                       <b-form-input
                         class="advanced-settings-input"
                         id="softwareexpiry"
-                        type="number"
-                        v-model="settings.softwareexpiry"
-                        number
+                        type="text"
+                        value="11/07/2027"
+                        disabled
                       ></b-form-input>
                     </b-input-group>
                   </div>
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
-                  Stop working after this POSIX timestamp.
+                  Stop working after this date. After this date please update or override in the bitcoin conf file.
                 </small>
               </div>
             </b-card-body>
@@ -1692,6 +1739,7 @@ export default {
   data() {
     return {
       settings: {},
+      showHints: false,
       networks: [
         { value: "main", text: "mainnet" },
         { value: "test", text: "testnet" },
@@ -1881,5 +1929,16 @@ export default {
 
 .modal-body::-webkit-scrollbar-thumb:hover {
   background-color: rgba(0, 0, 0, 0.5);
+}
+
+.pleb-hint-box {
+  border: 1px solid rgb(247, 147, 26);
+  background: #fffbe6;
+  border-radius: 6px;
+  padding: 0.5em 0.75em;
+  margin-top: 0.5em;
+  color: #856404;
+  font-size: 0.95em;
+  display: inline-block;
 }
 </style>
