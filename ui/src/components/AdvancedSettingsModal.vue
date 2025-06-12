@@ -5,17 +5,32 @@
     >
       <div class="d-flex align-items-center justify-content-between mt-1 mb-2">
         <h3 class="mb-0">Advanced Settings</h3>
-        <div class="d-flex align-items-center">
-          <toggle-switch
-            id="show-hints"
-            :on="showHints"
-            @toggle="showHints = $event"
-            class="mr-2"
-          ></toggle-switch>
-          <span>Show pleb hints</span>
+        <div class="d-flex flex-column align-items-end">
+          <div class="d-flex align-items-center mb-2">
+            <toggle-switch
+              id="show-hints"
+              :on="showHints"
+              @toggle="showHints = $event"
+              class="mr-2"
+            ></toggle-switch>
+            <span>Show pleb hints</span>
+          </div>
+          <b-button
+            id="monetary-maxi-btn"
+            @click="setMaxiMode"
+            class="btn-border btn-sm monetary-maxi-btn"
+            :class="{ 'btn-success': maxiModeActive }"
+            variant="outline-primary"
+            :disabled="isSettingsDisabled"
+          >
+            Set settings to reject spam
+          </b-button>
+          <b-tooltip target="monetary-maxi-btn" placement="left">
+            Tune settings to reject spam and mine only monetary transactions.
+          </b-tooltip>
         </div>
       </div>
-      <b-alert variant="warning" show class="mb-3">
+      <b-alert v-if="showHints" variant="warning" show class="mb-3">
         <small>
           Be careful when changing the settings below as they may cause issues 
           with other apps on your Umbrel that connect to your Bitcoin node. Only make 
@@ -65,10 +80,7 @@
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
                   Allow any transaction in the mempool of your Bitcoin node to be replaced with
-                  a newer version of the same transaction that includes a higher fee.<br>
-                  <div v-if="showHints" class="pleb-hint-box">
-                    Pleb hint: This lets you incite a miner to take your transaction faster by adding more fee to it.
-                  </div>
+                  a newer version of the same transaction that includes a higher fee.
                 </small>
               </div>
             </b-card-body>
@@ -100,6 +112,9 @@
                   Relay and mine data carrier transactions.<br>
                   <div v-if="showHints" class="pleb-hint-box">
                     Pleb hint: Remove shitcoins and JPEGs from your mempool/block template.
+                  </div><br>
+                  <div v-if="showHints" class="pleb-reco-box">
+                    Recommended value: Disabled.
                   </div>
                 </small>
               </div>
@@ -137,6 +152,9 @@
                   Note: datacarrier takes precedence over datacarriersize.<br>
                   <div v-if="showHints" class="pleb-hint-box">
                     Pleb hint: The maximum size of JPEGs and other data you want to relay/mine.
+                  </div><br>
+                  <div v-if="showHints" class="pleb-reco-box">
+                    Recommended value: 0.
                   </div>
                 </small>
               </div>
@@ -169,6 +187,9 @@
                   Reject parasitic transactions that are non-monetary.<br>
                   <div v-if="showHints" class="pleb-hint-box">
                     Pleb hint: Relay/mine non-monetary bitcoin transactions that do NOT contain arbitrary data.
+                  </div><br>
+                  <div v-if="showHints" class="pleb-reco-box">
+                    Recommended value: Enabled.
                   </div>
                 </small>
               </div>
@@ -201,6 +222,9 @@
                   Reject token transactions (runes).<br>
                   <div v-if="showHints" class="pleb-hint-box">
                     Pleb hint: Relay/mine runes shitcoins.
+                  </div><br>
+                  <div v-if="showHints" class="pleb-reco-box">
+                    Recommended value: Enabled.
                   </div>
                 </small>
               </div>
@@ -233,6 +257,9 @@
                   Relay non-P2SH multisig.<br>
                   <div v-if="showHints" class="pleb-hint-box">
                     Pleb hint: Initially used for multisig, today P2MS is used to arbitrarily add data to the chain in the worst way possible.
+                  </div><br>
+                  <div v-if="showHints" class="pleb-reco-box">
+                    Recommended value: Disabled.
                   </div>
                 </small>
               </div>
@@ -274,6 +301,241 @@
               </div>
             </b-card-body>
 
+            <!-- permitbarepubkey -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="mempool">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Permit Bare Pubkey
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          permitbarepubkey
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="permitbarepubkey"
+                      class="align-self-center"
+                      :on="settings.permitbarepubkey"
+                      @toggle="status => (settings.permitbarepubkey = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Relay legacy pubkey outputs.<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Like with P2MS, it was supposed to be used to pay someone, but today it's largely used to add arbitrary data in a very bad way.
+                  </div><br>
+                  <div v-if="showHints" class="pleb-reco-box">
+                    Recommended value: Disabled.
+                  </div>
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- maxscriptsize -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="mempool">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max Script Size
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          maxscriptsize
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="bytes">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="maxscriptsize"
+                        type="number"
+                        v-model="settings.maxscriptsize"
+                        number
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Maximum size of scripts we relay and mine, in bytes<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: In a Bitcoin transaction the script is the thing that define which signatures can spend the funds.
+                  </div>
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- datacarriercost -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="mempool">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Datacarrier cost
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          datacarriercost
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="N">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="datacarriercost"
+                        type="number"
+                        v-model="settings.datacarriercost"
+                        number
+                        :disabled="!settings.datacarrier"
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Treat extra data in transactions as at least N vbytes per actual byte<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Apply a premium on spam. The higher the value, the more fees spam has to pay to enter your mempool.
+                  </div>
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- acceptnonstddatacarrier -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="mempool">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Accept non standard datacarrier
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          acceptnonstddatacarrier
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div>
+                    <toggle-switch
+                      id="acceptnonstddatacarrier"
+                      class="align-self-center"
+                      :on="settings.acceptnonstddatacarrier"
+                      @toggle="status => (settings.acceptnonstddatacarrier = status)"
+                    ></toggle-switch>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Relay and mine non-OP_RETURN datacarrier injection<br>
+                  <div v-if="showHints" class="pleb-hint-box">
+                    Pleb hint: Enabling this will let inscriptions still pass the datacarrier filter.
+                  </div>
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- dustrelayfee -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="mempool">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Dust Relay Fee
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          dustrelayfee
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="BTC/kvB">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        step="0.00001"
+                        id="dustrelayfee"
+                        type="number"
+                        v-model="settings.dustrelayfee"
+                        number
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Fee rate (in BTC/kvB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- blockmaxsize -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="mempool">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max block size in bytes
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          blockmaxsize
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="bytes">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="blockmaxsize"
+                        type="number"
+                        v-model="settings.blockmaxsize"
+                        number
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set maximum block size in bytes.
+                </small>
+              </div>
+            </b-card-body>
+
+            <!-- blockmaxweight -->
+            <b-card-body class="subsetting-body px-2 px-sm-3">
+              <div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="flex-sm-grow-1">
+                    <label class="mb-0" for="mempool">
+                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
+                        Max block size in weight
+                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
+                          blockmaxweight
+                        </span>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="input-container ml-1">
+                    <b-input-group append="WU">
+                      <b-form-input
+                        class="advanced-settings-input"
+                        id="blockmaxweight"
+                        type="number"
+                        v-model="settings.blockmaxweight"
+                        number
+                      ></b-form-input>
+                    </b-input-group>
+                  </div>
+                </div>
+                <small class="w-lg-75 d-block text-muted mt-1">
+                  Set maximum BIP141 block weight.
+                </small>
+              </div>
+            </b-card-body>
+            
             <!-- bytespersigop -->
             <b-card-body class="subsetting-body px-2 px-sm-3">
               <div>
@@ -462,237 +724,6 @@
                 </div>
                 <small class="w-lg-75 d-block text-muted mt-1">
                   Do not accept transactions if any ancestor would have more than <n> kilobytes of in-mempool descendants
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- permitbarepubkey -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="mempool">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Permit Bare Pubkey
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          permitbarepubkey
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="permitbarepubkey"
-                      class="align-self-center"
-                      :on="settings.permitbarepubkey"
-                      @toggle="status => (settings.permitbarepubkey = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Relay legacy pubkey outputs.<br>
-                  <div v-if="showHints" class="pleb-hint-box">
-                    Pleb hint: Like with P2MS, it was supposed to be used to pay someone, but today it's largely used to add arbitrary data in a very bad way.
-                  </div>
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- maxscriptsize -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="mempool">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max Script Size
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          maxscriptsize
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="bytes">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="maxscriptsize"
-                        type="number"
-                        v-model="settings.maxscriptsize"
-                        number
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Maximum size of scripts we relay and mine, in bytes<br>
-                  <div v-if="showHints" class="pleb-hint-box">
-                    Pleb hint: In a Bitcoin transaction the script is the thing that define which signatures can spend the funds.
-                  </div>
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- datacarriercost -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="mempool">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Datacarrier cost
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          datacarriercost
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="N">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="datacarriercost"
-                        type="number"
-                        v-model="settings.datacarriercost"
-                        number
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Treat extra data in transactions as at least N vbytes per actual byte<br>
-                  <div v-if="showHints" class="pleb-hint-box">
-                    Pleb hint: Apply a premium on spam. The higher the value, the more fees spam has to pay to enter your mempool.
-                  </div>
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- acceptnonstddatacarrier -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="mempool">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Accept non standard datacarrier
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          acceptnonstddatacarrier
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div>
-                    <toggle-switch
-                      id="acceptnonstddatacarrier"
-                      class="align-self-center"
-                      :on="settings.acceptnonstddatacarrier"
-                      @toggle="status => (settings.acceptnonstddatacarrier = status)"
-                    ></toggle-switch>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Relay and mine non-OP_RETURN datacarrier injection<br>
-                  <div v-if="showHints" class="pleb-hint-box">
-                    Pleb hint: Enabling this will let inscriptions still pass the datacarrier filter.
-                  </div>
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- dustrelayfee -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="mempool">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Dust Relay Fee
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          dustrelayfee
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="BTC/kvB">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        step="0.00001"
-                        id="dustrelayfee"
-                        type="number"
-                        v-model="settings.dustrelayfee"
-                        number
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Fee rate (in BTC/kvB) used to define dust, the value of an output such that it will cost more than its value in fees at this fee rate to spend it.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- blockmaxsize -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="mempool">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max block size in bytes
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          blockmaxsize
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="bytes">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="blockmaxsize"
-                        type="number"
-                        v-model="settings.blockmaxsize"
-                        number
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set maximum block size in bytes.
-                </small>
-              </div>
-            </b-card-body>
-
-            <!-- blockmaxweight -->
-            <b-card-body class="subsetting-body px-2 px-sm-3">
-              <div>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div class="flex-sm-grow-1">
-                    <label class="mb-0" for="mempool">
-                      <p class="subsetting-title font-weight-bold mb-0 mr-1">
-                        Max block size in weight
-                        <span class="subsetting-config-name text-monospace font-weight-normal d-block">
-                          blockmaxweight
-                        </span>
-                      </p>
-                    </label>
-                  </div>
-                  <div class="input-container ml-1">
-                    <b-input-group append="WU">
-                      <b-form-input
-                        class="advanced-settings-input"
-                        id="blockmaxweight"
-                        type="number"
-                        v-model="settings.blockmaxweight"
-                        number
-                      ></b-form-input>
-                    </b-input-group>
-                  </div>
-                </div>
-                <small class="w-lg-75 d-block text-muted mt-1">
-                  Set maximum BIP141 block weight.
                 </small>
               </div>
             </b-card-body>
@@ -1756,6 +1787,7 @@ export default {
     return {
       settings: {},
       showHints: false,
+      maxiModeActive: false,
       networks: [
         { value: "main", text: "mainnet" },
         { value: "test", text: "testnet" },
@@ -1842,7 +1874,19 @@ export default {
     },
     isOutgoingConnectionsValid() {
       return this.settings.clearnet || this.settings.tor || this.settings.i2p;
-    }
+    },
+    setMaxiMode() {
+    this.settings.datacarrier = false;
+    this.settings.rejectparasites = true;
+    this.settings.rejecttokens = true;
+    this.settings.permitbaremultisig = false;
+    this.settings.permitbarepubkey = false;
+    this.settings.acceptnonstddatacarrier = false;
+    this.maxiModeActive = true;
+    setTimeout(() => {
+      this.maxiModeActive = false;
+    }, 1000);
+  },
   }
 };
 </script>
@@ -1956,5 +2000,25 @@ export default {
   color: #856404;
   font-size: 0.95em;
   display: inline-block;
+}
+
+.pleb-reco-box {
+  border: 1px solid #17a2b8;
+  background: #e8f7fa;
+  border-radius: 6px;
+  padding: 0.5em 0.75em;
+  margin-top: 0.5em;
+  color: #0c5460;
+  font-size: 0.95em;
+  display: inline-block;
+}
+
+.monetary-maxi-btn.btn-success,
+.monetary-maxi-btn.btn-success:hover,
+.monetary-maxi-btn.btn-success:focus,
+.monetary-maxi-btn.btn-success:active {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+  color: #fff !important;
 }
 </style>
