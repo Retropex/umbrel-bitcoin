@@ -365,7 +365,7 @@ export const settingsMetadata = {
 	},
 
 	blockmaxsize: {
-		tab: 'advanced',
+		tab: 'policy',
 		kind: 'number',
 		label: 'Max block size in bytes',
 		bitcoinLabel: 'blockmaxsize',
@@ -374,7 +374,7 @@ export const settingsMetadata = {
 	},
 
 	blockmaxweight: {
-		tab: 'advanced',
+		tab: 'policy',
 		kind: 'number',
 		label: 'Max block size in weight',
 		bitcoinLabel: 'blockmaxweight',
@@ -383,7 +383,7 @@ export const settingsMetadata = {
 	},
 
 	blockreconstructionextratxn: {
-		tab: 'advanced',
+		tab: 'optimization',
 		kind: 'number',
 		label: 'Number of transactions to keep in memory for reconstruction',
 		bitcoinLabel: 'blockreconstructionextratxn',
