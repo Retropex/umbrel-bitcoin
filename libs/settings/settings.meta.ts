@@ -470,6 +470,16 @@ export const settingsMetadata = {
 		default: 128,
 		unit: 'threads',
 	},
+	
+	datum: {
+		tab: 'optimization',
+		kind: 'toggle',
+		label: 'Enable blocknotify for datum',
+		bitcoinLabel: 'datum',
+		description:
+			'Enable blocknotify for datum to avoid mining stale work.',
+		default: true,
+	},
 
 	/* ===== Network tab ===== */
 	chain: {

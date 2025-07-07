@@ -100,6 +100,12 @@ function generateBaseConfLines(settings: SettingsSchema): string[] {
 				lines.push(`i2pacceptincoming=${flag(nets.includes('i2p'))}`)
 				break
 			}
+			
+			case 'datum': {
+				if (value === true) {
+					lines.push("blocknotify='curl -s -m 5 http://datum_datum_1:21000/NOTIFY'")
+				}
+			}
 
 			// All other keys → default "key=value" (boolean→0|1, number/string as is)
 			default: {
