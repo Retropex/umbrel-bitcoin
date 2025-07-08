@@ -89,6 +89,9 @@ COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 COPY --from=bitcoind /bin/bitcoind    /usr/local/bin/
 COPY --from=bitcoind /bin/bitcoin-cli /usr/local/bin/
 
+RUN apt-get update && apt-get install -y \
+    curl
+
 
 ENV NODE_ENV=production
 # 3000 = HTTP API, 8332 = RPC, 8333 = P2P
