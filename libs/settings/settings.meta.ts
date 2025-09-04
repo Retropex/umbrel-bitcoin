@@ -344,6 +344,15 @@ export const settingsMetadata = {
 		description: 'Relay legacy pubkey outputs.',
 		default: false,
 	},
+	
+	permitbaredatacarrier: {
+		tab: 'policy',
+		kind: 'toggle',
+		label: 'Permit Bare Datacarrier',
+		bitcoinLabel: 'permitbaredatacarrier',
+		description: 'Relay transactions that only have data carrier outputs',
+		default: false,
+	},
 
 	datacarriercost: {
 		tab: 'policy',
@@ -362,6 +371,15 @@ export const settingsMetadata = {
 		bitcoinLabel: 'acceptnonstddatacarrier',
 		description: 'Relay and mine non-OP_RETURN datacarrier injection',
 		default: false,
+	},
+	
+	maxscriptsize: {
+		tab: 'policy',
+		kind: 'number',
+		label: 'Max script size',
+		bitcoinLabel: 'maxscriptsize',
+		description: 'Maximum size of scripts (including the entire witness stack) we relay and mine in bytes',
+		default: 1650,
 	},
 
 	blockmaxsize: {
@@ -388,7 +406,16 @@ export const settingsMetadata = {
 		label: 'Number of transactions to keep in memory for reconstruction',
 		bitcoinLabel: 'blockreconstructionextratxn',
 		description: 'Extra transactions to keep in memory for compact block reconstructions',
-		default: 1000000,
+		default: 32768,
+	},
+	
+	blockreconstructionextratxnsize: {
+		tab: 'optimization',
+		kind: 'number',
+		label: 'Max memory for reconstruction',
+		bitcoinLabel: 'blockreconstructionextratxnsize',
+		description: 'Upper limit of memory usage (in megabytes) for keeping extra transactions in memory for compact block reconstructions.',
+		default: 10,
 	},
 	
 	coinstatsindex: {
