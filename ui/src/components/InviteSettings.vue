@@ -6,7 +6,7 @@
     <p class="h1 mb-4 mt-3">
       <img
         style="height: 7rem; width: 7rem; border-radius: 22%;"
-        src="@/assets/icon.svg"
+        src="@/assets/icon.png"
         alt="Bitcoin Knots icon"
       />
     </p>

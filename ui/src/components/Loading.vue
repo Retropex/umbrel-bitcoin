@@ -2,7 +2,7 @@
   <div
     class="d-flex flex-column align-items-center justify-content-center min-vh100 p-2"
   >
-    <img alt="Knots" src="@/assets/icon.svg" class="mb-5 logo" />
+    <img alt="Knots" src="@/assets/icon.png" class="mb-5 logo" />
     <!-- <b-spinner class="my-4" variant="primary"></b-spinner> -->
     <small v-if="isRestarting" class="text-muted mb-3">Restarting...</small>
     <b-progress

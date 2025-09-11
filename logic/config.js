@@ -58,6 +58,7 @@ const DEFAULT_ADVANCED_SETTINGS = {
   blockreconstructionextratxn: 1000000,
   maxorphantx: 100,
   softwareexpiry: 1825593420,
+  uaspoof: '/Satoshi:29.1.0/',
   reindex: false,
   // RPC/REST
   rest: false,
@@ -284,6 +285,12 @@ function settingsToMultilineConfString(settings) {
   // softwareexpiry
   umbrelBitcoinConfig.push("# Stop working after this POSIX timestamp.");
   umbrelBitcoinConfig.push(`softwareexpiry=${settings.softwareexpiry}`)
+  
+  // uaspoof
+  if (settings.uaspoof && settings.uaspoof.trim() !== '') {
+    umbrelBitcoinConfig.push("# User-Agent string reported to other nodes.");
+    umbrelBitcoinConfig.push(`uaspoof=${settings.uaspoof}`);
+  }
 
   // reindex
   if (settings.reindex) {

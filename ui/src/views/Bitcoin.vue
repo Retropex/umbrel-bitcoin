@@ -5,7 +5,7 @@
         <div class="d-flex flex-grow-1 justify-content-start align-items-start mb-3">
           <img
             class="app-icon mr-2 mr-sm-3"
-            src="@/assets/icon.svg"
+            src="@/assets/icon.png"
           />
           <div>
             <svg
