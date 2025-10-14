@@ -307,6 +307,7 @@ export const settingsMetadata = {
 		description: 'Set the maximum size of the data in OP_RETURN outputs (in bytes) that your node will relay.',
 		subDescription: 'Note: datacarrier must be enabled for this setting to take effect.',
 		default: 42,
+		unit: 'bytes',
 	},
 
 	permitbaremultisig: {
