@@ -14,7 +14,7 @@
 ###########################################
 # Bitcoind binaries - published by Umbrel
 ###########################################
-FROM ghcr.io/retropex/bitcoin:29.1 AS bitcoind
+FROM ghcr.io/retropex/bitcoin:29.2@sha256:2e3209117dd2d6ca5239d48fb44d71c218e99280ed180499f3036aff16a4b0f8 AS bitcoind
 
 ##########################################################
 # Dependencies layer — install every workspace deps
