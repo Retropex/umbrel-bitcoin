@@ -5,7 +5,7 @@
 // To add a new bitcoin.conf option, just add a new block to the `settingsMetadata` object and check that it is being written to the conf file correctly.
 
 // Tabs for organization (used in the UI to group settings)
-export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'advanced' | 'policy'
+export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'advanced' | 'policy' | 'mode'
 
 interface BaseOption {
 	tab: Tab
@@ -506,6 +506,20 @@ export const settingsMetadata = {
 		description:
 			'Enable blocknotify for datum to avoid mining stale work.',
 		default: true,
+	},
+	
+	mode: {
+		tab: 'mode',
+		kind: 'select',
+		label: 'mode',
+		bitcoinLabel: '',
+		description:
+			'Select the mode of your node.',
+		options: [
+			{value: 'knots', label: 'Knots'},
+			{value: 'garbageman', label: 'Garbageman'},
+		],
+		default: 'knots',
 	},
 
 	/* ===== Network tab ===== */

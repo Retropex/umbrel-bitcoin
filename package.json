@@ -1,6 +1,6 @@
 {
 	"name": "umbrel-bitcoin",
-	"version": "1.0.5-knots.v29.2",
+	"version": "1.0.6-knots.v29.2",
 	"private": true,
 	"workspaces": [
 		"apps/*"

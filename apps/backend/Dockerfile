@@ -15,6 +15,7 @@
 # Bitcoind binaries - published by Umbrel
 ###########################################
 FROM ghcr.io/retropex/bitcoin:29.2@sha256:2e3209117dd2d6ca5239d48fb44d71c218e99280ed180499f3036aff16a4b0f8 AS bitcoind
+FROM ghcr.io/retropex/bitcoin:v29.1-garbageman-umbrel AS bitcoind-garbageman
 
 ##########################################################
 # Dependencies layer — install every workspace deps
@@ -47,6 +48,9 @@ VOLUME /data
 
 COPY --from=bitcoind /bin/bitcoind    /usr/local/bin/
 COPY --from=bitcoind /bin/bitcoin-cli /usr/local/bin/
+
+COPY --from=bitcoind-garbageman /bin/bitcoind    /usr/local/bin/bitcoind-garbageman
+COPY --from=bitcoind-garbageman /bin/bitcoin-cli /usr/local/bin/bitcoin-cli-garbageman
 
 CMD ["npm","run","dev"]
 
@@ -88,6 +92,9 @@ COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 # bitcoind binaries
 COPY --from=bitcoind /bin/bitcoind    /usr/local/bin/
 COPY --from=bitcoind /bin/bitcoin-cli /usr/local/bin/
+
+COPY --from=bitcoind-garbageman /usr/bin/bitcoind    /usr/local/bin/bitcoind-garbageman
+COPY --from=bitcoind-garbageman /usr/bin/bitcoin-cli /usr/local/bin/bitcoin-cli-garbageman
 
 RUN apt-get update && apt-get install -y \
     curl

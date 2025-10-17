@@ -2,6 +2,7 @@ import {spawn, ChildProcessWithoutNullStreams, execFileSync} from 'node:child_pr
 import {EventEmitter} from 'node:events'
 import {Readable} from 'node:stream'
 import readline from 'node:readline'
+import {ensureConfig} from '../config/config.js'
 
 import type {ExitInfo} from '#types'
 
@@ -37,13 +38,26 @@ function onLine(src: Readable, callback: (line: string) => void) {
 
 export class BitcoindManager {
 	private child: ChildProcessWithoutNullStreams | null = null
-	private readonly bin: string
+	public bin: string
 	private readonly datadir: string
 	private readonly extraArgs: string[]
-	public readonly versionInfo: {implementation: string; version: string}
 	private startedAt: number | null = null
 	private lastError: Error | null = null
 	public exitInfo: ExitInfo | null = null
+	
+	// Bin selector
+	private async setBin() {
+		const settings = await ensureConfig();
+		var binary;
+		switch (settings['mode']) {
+			case 'garbageman':
+				binary = 'bitcoind-garbageman';
+				break;
+			default:
+				binary = process.env['BITCOIND_BIN'] || 'bitcoind';
+		}
+		this.setBinary(binary);
+	}
 
 	// Ring buffer for the last N log lines (stderr+stdout)
 	// We use this to show the last N log lines in the UI when bitcoind crashes
@@ -82,26 +96,6 @@ export class BitcoindManager {
 			...extraArgs, // from caller
 			...envArgs, // from env var (e.g., in Docker Compose)
 		]
-
-		// We grab the implementation and version here once so the UI can query it without needing to wait for RPC to be available (e.g., if bitcoind is down or still starting up)
-		try {
-			// Grab the first line of bitcoind --version output
-			// e.g., "Bitcoin Core daemon version v29.0.0"
-			const firstLine = execFileSync(this.bin, ['--version']).toString().split('\n')[0]
-
-			// implementation = everything before the word "version …"
-			// e.g., "Bitcoin Core"
-			const implementation = firstLine.replace(/(?:daemon|RPC client)?\s*version.*$/i, '').trim()
-
-			// version = first vX.Y.Z
-			// e.g., "v29.0.0"
-			const version = (firstLine.match(/v\d+\.\d+\.[\w\d\.]+/) ?? ['unknown'])[0]
-
-			this.versionInfo = {implementation, version}
-		} catch (error) {
-			this.versionInfo = {implementation: 'unknown', version: 'unknown'}
-			console.error('[bitcoind-manager] failed to get static version:', error)
-		}
 	}
 
 	setLastError(err: Error): void {
@@ -110,7 +104,8 @@ export class BitcoindManager {
 
 	// Spawn bitcoind as a child process
 	// TODO: decide if we want to auto-restart on exit ever
-	start() {
+	public async start() {
+		await this.setBin();
 		// return early if already running
 		if (this.child) return
 
@@ -158,7 +153,7 @@ export class BitcoindManager {
 	}
 
 	// Gracefully stop bitcoind
-	async stop() {
+	public async stop() {
 		if (!this.child) return
 
 		// Emit stop event for zmq hashtx subscriber
@@ -180,7 +175,34 @@ export class BitcoindManager {
 	}
 
 	// Child process status
-	status() {
+	public status() {
+		this.setBin();
 		return {running: !!this.child, startedAt: this.startedAt, error: this.lastError, pid: this.child?.pid ?? null}
+	}
+	
+	public async version(): Promise<{implementation: string; version: string}> {
+		await this.setBin();
+		try {
+			// Grab the first line of bitcoind --version output
+			// e.g., "Bitcoin Knots daemon version v29.0.0"
+			const firstLine = execFileSync(this.bin, ['--version']).toString().split('\n')[0]
+
+			// implementation = everything before the word "version …"
+			// e.g., "Bitcoin Knots"
+			const implementation = firstLine.replace(/(?:daemon|RPC client)?\s*version.*$/i, '').trim()
+
+			// version = first vX.Y.Z
+			// e.g., "v29.0.0"
+			const version = (firstLine.match(/v\d+\.\d+\.[\w\d\.]+/) ?? ['unknown'])[0]
+
+			return {implementation: implementation, version: version}
+		} catch (error) {
+			console.error('[bitcoind-manager] failed to get static version:', error)
+			return {implementation: 'unknown', version: 'unknown'}
+		}
+	}
+	
+	setBinary(binary: string): void {
+		this.bin = binary
 	}
 }
