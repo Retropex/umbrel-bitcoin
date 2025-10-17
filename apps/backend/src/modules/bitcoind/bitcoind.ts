@@ -18,7 +18,7 @@ export async function bootBitcoind(): Promise<void> {
 // Public façade for the singleton BitcoindManager.
 // Gives routes a one-liner API: `app.post('/restart', bitcoind.restart)`.
 
-export const version = (): BitcoindVersion => bitcoind.versionInfo
+export const version = async (): Promise<BitcoindVersion> => await bitcoind.version()
 
 export const status = (): BitcoindStatus => bitcoind.status()
 

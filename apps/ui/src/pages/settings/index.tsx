@@ -477,6 +477,7 @@ export default function SettingsCard() {
 											<SettingsTabTrigger value='network'>Network Selection</SettingsTabTrigger>
 											<SettingsTabTrigger value='policy'>Policy</SettingsTabTrigger>
 											<SettingsTabTrigger value='advanced'>Advanced</SettingsTabTrigger>
+											<SettingsTabTrigger value='mode'>Mode</SettingsTabTrigger>
 										</TabsList>
 									</FadeScrollArea>
 								</div>
@@ -522,6 +523,10 @@ export default function SettingsCard() {
 
 											<TabsContent value='policy' className='space-y-6 pt-6'>
 												<SettingsTabContent tab='policy' form={form} />
+											</TabsContent>
+											
+											<TabsContent value='mode' className='space-y-6 pt-6'>
+												<SettingsTabContent tab='mode' form={form} />
 											</TabsContent>
 
 											<TabsContent value='advanced' className='space-y-6 pt-6'>
