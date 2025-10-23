@@ -1,11 +1,25 @@
 // This settings metadata file is used as a single source of truth for deriving the following:
-// - validation schema (settings.schema.ts)
-// - default settings values (defaultValues.ts)
+// - validation schema per Bitcoin Core version (settings.schema.ts)
+// - default settings values per Bitcoin Core version
 // - The frontend settings page (React form inputs, descriptions, tool-tips, etc.)
 // To add a new bitcoin.conf option, just add a new block to the `settingsMetadata` object and check that it is being written to the conf file correctly.
 
+// Available Bitcoin Core versions
+// IMPORTANT:
+// - Any version added here needs to be added in the Dockerfile
+// - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
+export const AVAILABLE_BITCOIN_CORE_VERSIONS = ['v30.0', 'v29.2'] as const
+
+// Default Bitcoin Core version used by bitcoind manager (always the newest version in the array)
+export const DEFAULT_BITCOIN_CORE_VERSION = AVAILABLE_BITCOIN_CORE_VERSIONS[0]
+export type BitcoinCoreVersion = (typeof AVAILABLE_BITCOIN_CORE_VERSIONS)[number]
+
+export const LATEST = 'latest' as const
+export const VERSION_CHOICES = [LATEST, ...AVAILABLE_BITCOIN_CORE_VERSIONS] as const
+export type SelectedVersion = (typeof VERSION_CHOICES)[number]
+
 // Tabs for organization (used in the UI to group settings)
-export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'advanced' | 'policy'
+export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'version' | 'advanced' | 'policy'
 
 interface BaseOption {
 	tab: Tab
@@ -39,14 +53,39 @@ interface SelectOption extends BaseOption {
 }
 
 interface MultiOption extends BaseOption {
-	kind: 'multi' // ← new
+	kind: 'multi'
 	options: {value: string; label: string}[]
-	default: string[] // empty array = “no onlynet lines”
+	default: string[]
 	requireAtLeastOne: boolean
 }
 
 export type Option = NumberOption | BooleanOption | SelectOption | MultiOption
 
+// Optional per-version differences (overrides) for rule fields
+// e.g., if the default value for a setting changes between Core versions, we can override the default value for specific versions.
+type VersionOverrides = Partial<{
+	default: unknown
+	min: number
+	max: number
+	step: number
+	unit: string
+	options: {value: string; label: string}[]
+	requireAtLeastOne: boolean
+	disabledWhen: Record<string, (v: unknown) => boolean>
+	disabledMessage: string
+}>
+
+// VersionedOption adds version-awareness on top of Option:
+// - introducedIn is inclusive (i.e., available from this version and newer)
+// - removedIn is exclusive (i.e., not available starting with this version)
+// - versionOverrides carries tiny per-version diffs for rule fields only
+export type VersionedOption = Option & {
+	introducedIn?: BitcoinCoreVersion // inclusive
+	removedIn?: BitcoinCoreVersion // exclusive
+	versionOverrides?: Partial<Record<BitcoinCoreVersion, VersionOverrides>>
+}
+
+// NOTE: this is the single source of truth for the settings metadata. Everything is derived from this object (versioned metadata, versioned schema, default values, UI fields, etc).
 // TypeScript infers the type of the object literals below based on the `kind` property.
 export const settingsMetadata = {
 	/* ===== Peers tab ===== */
@@ -475,10 +514,27 @@ export const settingsMetadata = {
 	minrelaytxfee: {
 		tab: 'optimization',
 		kind: 'number',
-		label: 'Minimum Transaction Fee to Relay',
+		label: 'Minimum Fee to Relay Transactions',
 		bitcoinLabel: 'minrelaytxfee',
 		description:
 			'Sets the minimum fee rate your node will accept for relaying, mining, transaction creation, and mempool admission. Transactions below this threshold will be neither relayed nor accepted into your mempool.',
+		subDescription: '⚠ It is recommended to also change incrementalrelayfee when changing this setting.',
+		default: 1,
+		min: 0,
+		// Max derived from Knots MoneyRange(MAX_MONEY): 21,000,000 BTC/kvB → 2_100_000_000_000 sat/vB
+		// Knots rejects out-of-range values (errors on startup) and does not clamp.
+		max: 2_100_000_000_000,
+		step: 1,
+		unit: 'sat/vB',
+	},
+
+	incrementalrelayfee: {
+		tab: 'optimization',
+		kind: 'number',
+		label: 'Additional Fee for Replacing Transactions',
+		bitcoinLabel: 'incrementalrelayfee',
+		description: 'Set the minimum fee rate increase necessary to replace an existing transaction in the mempool.',
+		subDescription: '⚠ It is recommended to also change minrelaytxfee when changing this setting.',
 		default: 1,
 		min: 0,
 		// Max derived from Knots MoneyRange(MAX_MONEY): 21,000,000 BTC/kvB → 2_100_000_000_000 sat/vB
@@ -520,6 +576,8 @@ export const settingsMetadata = {
 		step: 1,
 		default: 100,
 		unit: 'txs',
+		// This setting was removed in Core v30.0, so we exclude it from that version onward
+		removedIn: 'v30.0',
 	},
 
 	/* ===== RPC & REST tab ===== */
@@ -558,6 +616,22 @@ export const settingsMetadata = {
 		default: true,
 	},
 
+	/* ===== Version tab ===== */
+	// TODO: finess description and subDescription
+	version: {
+		tab: 'version',
+		kind: 'select',
+		label: 'Bitcoin Knots Version',
+		bitcoinLabel: 'version',
+		description:
+			'Select whether to always run the latest version of Bitcoin Knots, or stay on a specific version until you change it manually. Your Bitcoin Node app will continue to receive updates from the Umbrel App Store even if you decide to stay on a specific version.',
+		options: [
+			{value: LATEST, label: 'Always use the latest version'},
+			...AVAILABLE_BITCOIN_CORE_VERSIONS.map((version) => ({value: version, label: version})),
+		],
+		default: LATEST,
+	},
+
 	/* ===== Network tab ===== */
 	chain: {
 		tab: 'network',
@@ -575,12 +649,46 @@ export const settingsMetadata = {
 		],
 		default: 'main',
 	},
-} satisfies Record<string, Option>
+} satisfies Record<string, VersionedOption>
 
-function extractDefaultValues<M extends Record<string, {default: unknown}>>(meta: M) {
-	const out = {} as {[K in keyof M]: M[K]['default']}
-	for (const k in meta) out[k] = meta[k].default
-	return out
+// Gets the concrete Bitcoin Core version for a given selected version
+export function resolveVersion(desired: SelectedVersion): BitcoinCoreVersion {
+	// We always resolve 'latest' to the default version
+	return desired === LATEST ? DEFAULT_BITCOIN_CORE_VERSION : desired
 }
 
-export const defaultValues = extractDefaultValues(settingsMetadata)
+// Creates the version‑specific metadata for a given Bitcoin Core version:
+export function settingsMetadataForVersion(version: BitcoinCoreVersion) {
+	const metadata: Record<string, Option> = {}
+	const versionIdx = AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(version)
+
+	// Loop through each settingsMetadata entry and build the versioned metadata
+	for (const [key, value] of Object.entries(settingsMetadata) as Array<[string, VersionedOption]>) {
+		// Skip the setting entirely if it is not in the specified Bitcoin Core version
+		if (value.introducedIn && versionIdx > AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(value.introducedIn)) continue
+		if (value.removedIn && versionIdx <= AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(value.removedIn)) continue
+
+		// Merge the versioned metadata with the version overrides
+		const merged = {
+			...value,
+			...(value.versionOverrides?.[version] ?? {}),
+		} as Record<string, unknown>
+
+		// Strip the versioning keys
+		delete merged['introducedIn']
+		delete merged['removedIn']
+		delete merged['versionOverrides']
+
+		metadata[key] = merged as unknown as Option
+	}
+
+	return metadata
+}
+
+// Compute default form values for a given Bitcoin Core version.
+export function DefaultValuesForVersion(version: BitcoinCoreVersion) {
+	const metadata = settingsMetadataForVersion(version)
+	const defaults = {} as Record<string, unknown>
+	for (const key in metadata) defaults[key] = (metadata as Record<string, {default: unknown}>)[key].default
+	return defaults
+}
