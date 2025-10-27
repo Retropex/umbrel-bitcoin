@@ -47,18 +47,18 @@ WORKDIR /repo/apps/backend
 VOLUME /data
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v30.0 /opt/bitcoind/v29.2
-COPY --from=bitcoind_30_0 /bin/bitcoind    /opt/bitcoind/v30.0/bitcoind
-COPY --from=bitcoind_30_0 /bin/bitcoin-cli /opt/bitcoind/v30.0/bitcoin-cli
+RUN mkdir -p /opt/bitcoind/v29.2 /opt/bitcoind/v29.1
 COPY --from=bitcoind_29_2 /bin/bitcoind    /opt/bitcoind/v29.2/bitcoind
 COPY --from=bitcoind_29_2 /bin/bitcoin-cli /opt/bitcoind/v29.2/bitcoin-cli
+COPY --from=bitcoind_29_1 /bin/bitcoind    /opt/bitcoind/v29.1/bitcoind
+COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
 
 # Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
 # By default we point to the latest version of Bitcoin Core
-RUN ln -sfn /opt/bitcoind/v30.0 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/v29.2 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
