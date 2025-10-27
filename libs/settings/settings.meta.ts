@@ -496,7 +496,7 @@ export const settingsMetadata = {
 
 	// Fee policy settings (rates shown as sat/vB; converted to BTC/kvB when writing bitcoin.conf)
 	blockmintxfee: {
-		tab: 'optimization',
+		tab: 'policy',
 		kind: 'number',
 		label: 'Minimum Transaction Fee for Block Templates',
 		bitcoinLabel: 'blockmintxfee',
@@ -512,7 +512,7 @@ export const settingsMetadata = {
 	},
 
 	minrelaytxfee: {
-		tab: 'optimization',
+		tab: 'policy',
 		kind: 'number',
 		label: 'Minimum Fee to Relay Transactions',
 		bitcoinLabel: 'minrelaytxfee',
@@ -529,7 +529,7 @@ export const settingsMetadata = {
 	},
 
 	incrementalrelayfee: {
-		tab: 'optimization',
+		tab: 'policy',
 		kind: 'number',
 		label: 'Additional Fee for Replacing Transactions',
 		bitcoinLabel: 'incrementalrelayfee',
