@@ -1,11 +1,12 @@
 import {motion, AnimatePresence} from 'framer-motion'
 import {Info as InfoIcon} from 'lucide-react'
-import prettyMs from 'pretty-ms'
+import {formatUptimeMs} from '@/lib/formatUptime'
 import {useState, useEffect} from 'react'
 
 import {Card, CardContent} from '@/components/ui/card'
 import {GradientBorderTopBottom, GradientBorderFromCorners} from '@/components/shared/GradientBorders'
 import InfoDialog from '@/components/shared/InfoDialog'
+import HorizontalFadeScroll from '@/components/shared/HorizontalFadeScroll'
 import Globe from './Globe'
 import PeersChart from './PeersChart'
 import StatusDot from './StatusDot'
@@ -43,10 +44,7 @@ export default function HomePage() {
 	}, [])
 
 	const running = !isError && status?.running === true
-	const uptime =
-		running && status?.startedAt
-			? prettyMs(Date.now() - new Date(status.startedAt).getTime(), {verbose: true, unitCount: 1})
-			: null
+	const uptime = running && status?.startedAt ? formatUptimeMs(Date.now() - new Date(status.startedAt).getTime()) : null
 
 	const percentSynced = calcSyncPercent(syncStatus)
 	const stage = syncStage(syncStatus)
@@ -187,10 +185,12 @@ export default function HomePage() {
 				</CardContent>
 			</Card>
 
-			{/* Blocks page — hidden on mobile */}
-			<div className='hidden md:block w-full mt-4'>
+			{/* Blocks — horizontally scrollable on mobile */}
+			<div className='w-full mt-4'>
 				<span className='text-white/50 text-[14px] font-[400] ml-4'>Latest Blocks</span>
-				<Blocks />
+				<HorizontalFadeScroll>
+					<Blocks />
+				</HorizontalFadeScroll>
 			</div>
 		</>
 	)

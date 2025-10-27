@@ -4,7 +4,7 @@
   </a>
   <h1 align="center">Bitcoin Node</h1>
   <p align="center">
-    Run a Bitcoin node on your umbrelOS personal server. An official app by Umbrel. Powered by Bitcoin Core.
+    Run a Bitcoin node on your umbrelOS personal server. An official app by Umbrel. Powered by Bitcoin Knots.
     <br />
     <a href="https://umbrel.com"><strong>umbrel.com »</strong></a>
     <br />

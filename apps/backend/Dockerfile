@@ -12,9 +12,10 @@
 #  – bitcoind + bitcoin-cli binaries
 
 ###########################################
-# Bitcoind binaries - published by Umbrel
+# Bitcoind
 ###########################################
-FROM ghcr.io/retropex/bitcoin:29.2@sha256:2e3209117dd2d6ca5239d48fb44d71c218e99280ed180499f3036aff16a4b0f8 AS bitcoind
+FROM ghcr.io/retropex/bitcoin:29.2@sha256:2e3209117dd2d6ca5239d48fb44d71c218e99280ed180499f3036aff16a4b0f8 AS bitcoind_29_2
+FROM ghcr.io/retropex/bitcoin:29.1@sha256:da5bb600703a7ed885f64dbe93a5cd970138f28319f2074b51e3544e141711ed AS bitcoind_29_1
 
 ##########################################################
 # Dependencies layer — install every workspace deps
@@ -45,8 +46,28 @@ WORKDIR /repo/apps/backend
 
 VOLUME /data
 
-COPY --from=bitcoind /bin/bitcoind    /usr/local/bin/
-COPY --from=bitcoind /bin/bitcoin-cli /usr/local/bin/
+# bitcoind binaries
+RUN mkdir -p /opt/bitcoind/v29.2 /opt/bitcoind/v29.1
+COPY --from=bitcoind_29_2 /bin/bitcoind    /opt/bitcoind/v29.2/bitcoind
+COPY --from=bitcoind_29_2 /bin/bitcoin-cli /opt/bitcoind/v29.2/bitcoin-cli
+COPY --from=bitcoind_29_1 /bin/bitcoind    /opt/bitcoind/v29.1/bitcoind
+COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
+
+# Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
+RUN chown 1000:1000 /opt/bitcoind
+
+# Symbolic link for default bitcoind binary
+# By default we point to the latest version of Bitcoin Knots
+RUN ln -sfn /opt/bitcoind/v29.2 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
+RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
+
+# Symlink for datadir so bitcoin-cli auto-finds the RPC cookie
+# Allows exec'ing bitcoin-cli inside the container without specifying credentials
+RUN ln -sfn /data/bitcoin /root/.bitcoin
+RUN mkdir -p /home/node \
+ && ln -sfn /data/bitcoin /home/node/.bitcoin \
+ && chown -h 1000:1000 /home/node/.bitcoin
 
 CMD ["npm","run","dev"]
 
@@ -86,14 +107,38 @@ COPY --from=app-builder /repo/libs/settings/dist ./libs/settings/dist
 COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 
 # bitcoind binaries
-COPY --from=bitcoind /bin/bitcoind    /usr/local/bin/
-COPY --from=bitcoind /bin/bitcoin-cli /usr/local/bin/
+RUN mkdir -p /opt/bitcoind/v29.2 /opt/bitcoind/v29.1
+COPY --from=bitcoind_29_2 /bin/bitcoind    /opt/bitcoind/v29.2/bitcoind
+COPY --from=bitcoind_29_2 /bin/bitcoin-cli /opt/bitcoind/v29.2/bitcoin-cli
+COPY --from=bitcoind_29_1 /bin/bitcoind    /opt/bitcoind/v29.1/bitcoind
+COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
 
-RUN apt-get update && apt-get install -y \
+# Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
+RUN chown 1000:1000 /opt/bitcoind
+
+# Symbolic link for default bitcoind binary
+# By default we point to the latest version of Bitcoin Knots
+RUN ln -sfn /opt/bitcoind/v29.2 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
+RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
+
+# Symlink for datadir so bitcoin-cli auto-finds the RPC cookie
+# Allows exec'ing bitcoin-cli inside the container without specifying credentials
+RUN ln -sfn /data/bitcoin /root/.bitcoin
+RUN mkdir -p /home/node \
+ && ln -sfn /data/bitcoin /home/node/.bitcoin \
+ && chown -h 1000:1000 /home/node/.bitcoin
+
+ RUN apt-get update && apt-get install -y \
     curl
 
 
 ENV NODE_ENV=production
+
+# Data dirs inside /data
+ENV BITCOIN_DIR=/data/bitcoin
+ENV APP_STATE_DIR=/data/app
+
 # 3000 = HTTP API, 8332 = RPC, 8333 = P2P
 EXPOSE 3000 8332 8333
 # app and bitcoind data

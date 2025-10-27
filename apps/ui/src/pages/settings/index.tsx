@@ -3,8 +3,9 @@
 
 import {useEffect, useMemo, useRef, useState} from 'react'
 import {useSearchParams} from 'react-router-dom'
-import {useForm, FormProvider, Controller} from 'react-hook-form'
+import {useForm, FormProvider, Controller, useWatch, useFormState} from 'react-hook-form'
 import {Search} from 'lucide-react'
+import {AnimatePresence, motion} from 'framer-motion'
 import {zodResolver} from '@hookform/resolvers/zod'
 import clsx from 'clsx'
 import {toast} from 'sonner'
@@ -35,18 +36,76 @@ import {SettingsDisabledContext, useInputsDisabled} from './SettingsDisabledCont
 import DangerZoneAlert from './DangerZoneAlert'
 import BitcoindErrorLog from './BitcoindErrorLog'
 import CustomConfigEditor from './CustomConfigEditor'
+import SaveSettingsDialog from './SaveSettingsDialog'
 
-import {settingsSchema, defaultValues, settingsMetadata, type SettingsSchema, type Tab, type Option} from '#settings'
+import {
+	DefaultValuesForVersion,
+	settingsMetadataForVersion,
+	resolveVersion,
+	schemaForVersion,
+	type SettingsSchema,
+	type Tab,
+	type Option,
+	type SelectedVersion,
+} from '#settings'
 
 import {useSettings, useUpdateSettings, useRestoreDefaults} from '@/hooks/useSettings'
 import {useBitcoindExitInfo} from '@/hooks/useBitcoindExitInfo'
+import IncompatibleSettingsAlert from './IncompatibleSettingsAlert.js'
 
-type SettingName = keyof typeof settingsMetadata
+type SettingName = string
+
+// Version-change handling for the form:
+// This keeps UX smooth when the user changes the Knots version in the dropdown.
+// It preserves any explicit user edits/clears, seeds defaults only for settings
+// that did not exist in the previous version, and then runs a single
+// validation so the versioned schema applies immediately and zod errors show up.
+function updateFormWhenVersionChanges(
+	form: ReturnType<typeof useForm>,
+	previousKeys: Set<string>,
+	selectedVersion: SelectedVersion,
+) {
+	// Derive the settings metadata for the target Knots version
+	const targetVersion = resolveVersion(selectedVersion)
+	const targetMetadata = settingsMetadataForVersion(targetVersion)
+
+	// Derive defaults for the target version and set them ONLY for settings that did not exist in the previous version
+	// e.g., if prev version was v30.0 and user switches to v29.2 there will be a new setting called `maxorphantx` that needs to be set to the default value for v29.2
+	const defaults = DefaultValuesForVersion(targetVersion) as Record<string, unknown>
+	for (const key of Object.keys(targetMetadata)) {
+		const isNewKey = !previousKeys.has(key)
+		if (isNewKey) {
+			// We avoid marking dirty or triggering per-field validation and instead do a single revalidation pass below
+			form.setValue(key as any, (defaults as any)[key], {shouldValidate: false, shouldDirty: false})
+		}
+	}
+	// We do a single revalidation pass so the versioned resolver applies the new schema
+	void form.trigger()
+}
 
 // Trigger for each tab
-function SettingsTabTrigger({value, children}: {value: string; children: React.ReactNode}) {
+function SettingsTabTrigger({
+	value,
+	children,
+	control,
+	names,
+}: {
+	value: Tab
+	children: React.ReactNode
+	control: any
+	names: string[]
+}) {
+	// Bitcoind exit info for the Advanced tab
 	const {data: exitInfo} = useBitcoindExitInfo()
 	const hasCrash = exitInfo != null
+	// RHF/Zod validation errors for just the fields in this tab.
+	const {errors} = useFormState({control, name: names})
+	// true if any subscribed field in this tab currently has a validation error
+	const hasError = names.some((n) => !!(errors as Record<string, unknown>)?.[n])
+
+	// Determine when to show the red error dot for this tab
+	const isAdvancedTab = value === 'advanced'
+	const showErrorDot = isAdvancedTab ? hasCrash : hasError
 
 	return (
 		<TabsTrigger
@@ -55,9 +114,9 @@ function SettingsTabTrigger({value, children}: {value: string; children: React.R
 		>
 			{children}
 
-			{/* We show a pulsating red dot in the Advanced tab if bitcoind has crashed */}
-			{value === 'advanced' && hasCrash && (
-				<span className='relative inline-flex h-2 w-2'>
+			{/* We show a pulsating red error dot to indicate that there is a validation error(s) in this tab */}
+			{showErrorDot && (
+				<span aria-hidden className='relative inline-flex h-2 w-2'>
 					{/* outer expanding ring that pings */}
 					<span className='absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping' />
 					{/* solid center dot */}
@@ -69,14 +128,22 @@ function SettingsTabTrigger({value, children}: {value: string; children: React.R
 }
 
 // Content inside each tab
-function SettingsTabContent({tab, form}: {tab: Tab; form: ReturnType<typeof useForm>}) {
-	const fieldsForTab = (Object.keys(settingsMetadata) as SettingName[]).filter((k) => settingsMetadata[k].tab === tab)
+function SettingsTabContent({
+	tab,
+	form,
+	settingsMetadata,
+}: {
+	tab: Tab
+	form: ReturnType<typeof useForm>
+	settingsMetadata: Record<string, Option>
+}) {
+	const fieldsForTab = (Object.keys(settingsMetadata) as string[]).filter((k) => settingsMetadata[k].tab === tab)
 
 	return (
 		<>
 			{fieldsForTab.map((k, index) => (
-				<div key={k} className={index < fieldsForTab.length - 1 ? 'border-b-[1px] border-white/20 pb-6' : ''}>
-					<FieldRenderer name={k} form={form} />
+				<div key={String(k)} className={index < fieldsForTab.length - 1 ? 'border-b-[1px] border-white/20 pb-6' : ''}>
+					<FieldRenderer name={k as SettingName} form={form} settingsMetadata={settingsMetadata} />
 				</div>
 			))}
 		</>
@@ -85,12 +152,20 @@ function SettingsTabContent({tab, form}: {tab: Tab; form: ReturnType<typeof useF
 
 // Render each individual setting depending on its kind (e.g., number, toggle, multi, select)
 // TODO: break out the actual field rendering into a separate function/component and make the layout DRY
-function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof useForm>}) {
-	const meta = settingsMetadata[name] as Option
+function FieldRenderer({
+	name,
+	form,
+	settingsMetadata,
+}: {
+	name: SettingName
+	form: ReturnType<typeof useForm>
+	settingsMetadata: Record<string, Option>
+}) {
+	const option = settingsMetadata[name] as Option
 	const disabled = useInputsDisabled()
 
 	// Number fields (e.g., dbcache)
-	if (meta.kind === 'number') {
+	if (option.kind === 'number') {
 		return (
 			<div className='relative flex flex-col gap-1'>
 				<div className='flex flex-row justify-between items-center'>
@@ -100,10 +175,10 @@ function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof
 								{form.formState.errors[name]?.message as string}
 							</p>
 						)}
-						<label className='text-[14px] font-[400] text-white'>{meta.label}</label>
+						<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 
 						<div className='flex flex-wrap gap-1 my-1'>
-							{meta.bitcoinLabel.split(',').map((label, index) => (
+							{option.bitcoinLabel.split(',').map((label, index) => (
 								<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 									{label.trim()}
 								</span>
@@ -113,60 +188,71 @@ function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof
 					{/* TODO: make responsive */}
 					<InputField
 						className='w-32'
-						id={meta.bitcoinLabel}
+						id={option.bitcoinLabel}
 						type='number'
-						step={meta.step ?? 1}
+						step={option.step ?? 1}
+						min={option.min as number | undefined}
+						max={option.max as number | undefined}
 						{...form.register(name, {valueAsNumber: true})}
-						unit={meta.unit}
+						unit={option.unit}
 						disabled={disabled}
 					/>
 				</div>
-				<p className='text-[13px] font-[400] text-white/60'>{meta.description}</p>
-				{meta.subDescription && <p className='text-[12px] font-[400] text-white/60 mt-1'>{meta.subDescription}</p>}
+				<p className='text-[13px] font-[400] text-white/60'>{option.description}</p>
+				{option.subDescription && <p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>}
 				<p className='text-[12px] font-[400] text-white/50  mt-2'>
-					default: {meta.default} {meta.unit}
+					default: {option.default} {option.unit}
 				</p>
 			</div>
 		)
 	}
 
 	// Boolean Toggle fields (e.g., peerblockfilters)
-	if (meta.kind === 'toggle') {
+	if (option.kind === 'toggle') {
 		const disabledByOtherSetting =
-			meta.disabledWhen && Object.entries(meta.disabledWhen).some(([other, fn]) => fn(form.watch(other as SettingName)))
+			option.disabledWhen &&
+			Object.entries(option.disabledWhen).some(([other, fn]) =>
+				(fn as (v: unknown) => boolean)(form.watch(other as string)),
+			)
 
 		return (
 			<Controller
 				name={name}
 				control={form.control}
 				render={({field, fieldState}) => (
-					<div className='flex flex-col gap-1'>
-						<div className='flex flex-row justify-between items-center'>
+					<div className='relative flex flex-col gap-1'>
+						<div className='flex flex-row justify-between sm:items-center'>
 							<div>
-								<label className='text-[14px] font-[400] text-white'>{meta.label}</label>
+								<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 								<div className='flex flex-wrap gap-1 my-1'>
-									{meta.bitcoinLabel.split(',').map((label, index) => (
+									{option.bitcoinLabel.split(',').map((label, index) => (
 										<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 											{label.trim()}
 										</span>
 									))}
 								</div>
 							</div>
-							<Toggle
-								name={name}
-								// current RHF value
-								checked={!!field.value}
-								onToggle={field.onChange}
-								disabled={disabled || disabledByOtherSetting}
-								disabledMessage={meta.disabledMessage}
-							/>
+							<div className='max-sm:mt-2'>
+								<Toggle
+									name={name}
+									// current RHF value
+									checked={!!field.value}
+									onToggle={field.onChange}
+									disabled={disabled || disabledByOtherSetting}
+									disabledMessage={option.disabledMessage}
+								/>
+							</div>
 						</div>
-						<p className='text-[13px] font-[400] text-white/60'>{meta.description}</p>
-						{meta.subDescription && <p className='text-[12px] font-[400] text-white/60 mt-1'>{meta.subDescription}</p>}
+						<p className='text-[13px] font-[400] text-white/60'>{option.description}</p>
+						{option.subDescription && (
+							<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>
+						)}
 						<p className='text-[12px] font-[400] text-white/50 mt-2'>
-							default: {meta.default ? 'enabled' : 'disabled'}
+							default: {option.default ? 'enabled' : 'disabled'}
 						</p>
-						{fieldState.error && <p className='text-xs text-red-400'>{fieldState.error.message}</p>}
+						{fieldState.error && (
+							<p className='absolute -bottom-4 left-0 text-xs text-red-500'>{fieldState.error.message}</p>
+						)}
 					</div>
 				)}
 			/>
@@ -174,7 +260,7 @@ function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof
 	}
 
 	// Multi-select fields (e.g., onlynet) rendered as a row of toggles
-	if (meta.kind === 'multi') {
+	if (option.kind === 'multi') {
 		return (
 			<Controller
 				name={name}
@@ -194,29 +280,22 @@ function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof
 					}
 
 					return (
-						<div className='flex flex-col gap-1'>
-							<div className='flex flex-row justify-between items-center'>
+						<div className='relative flex flex-col gap-1'>
+							<div className='flex flex-row justify-between sm:items-center max-sm:mb-2'>
 								<div>
-									<label className='text-[14px] font-[400] text-white'>{meta.label}</label>
+									<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 									<div className='flex flex-wrap gap-1 my-1'>
-										{meta.bitcoinLabel.split(',').map((label, index) => (
+										{option.bitcoinLabel.split(',').map((label, index) => (
 											<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 												{label.trim()}
 											</span>
 										))}
 									</div>
 								</div>
-								{/*  one Toggle per option  */}
-								<div className='relative flex flex-col gap-2 items-end'>
-									{/* validation error - TODO: move this to appropriate area */}
-									{fieldState.error && (
-										<p className='absolute top-20 right-0 text-xs text-red-400 text-right whitespace-nowrap'>
-											{fieldState.error.message}
-										</p>
-									)}
-
-									{meta.options.map((opt) => (
-										<div key={opt.value} className='flex items-center gap-2'>
+								{/* one Toggle per option, rendered on the right side */}
+								<div className='flex flex-col items-end sm:flex-row flex-wrap sm:items-center gap-3'>
+									{option.options.map((opt) => (
+										<div key={opt.value} className='flex items-center gap-1'>
 											<span className='text-[12px] font-[400] text-white/60'>{opt.label}</span>
 											<Toggle
 												name={`${name}-${opt.value}`}
@@ -228,10 +307,16 @@ function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof
 									))}
 								</div>
 							</div>
-							<p className='text-[13px] font-[400] text-white/60'>{meta.description}</p>
+							<p className='text-[13px] font-[400] text-white/60'>{option.description}</p>
+							{option.subDescription && (
+								<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>
+							)}
 							<p className='text-[12px] font-[400] text-white/50 mt-2'>
-								default: {meta.default.length ? meta.default.join(', ') : 'none'}
+								default: {option.default.length ? option.default.join(', ') : 'none'}
 							</p>
+							{fieldState.error && (
+								<p className='absolute -bottom-4 left-0 text-xs text-red-500'>{fieldState.error.message}</p>
+							)}
 						</div>
 					)
 				}}
@@ -241,18 +326,21 @@ function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof
 
 	// Select fields (e.g., chain)
 	// TODO: use shadcn select component and style it
-	if (meta.kind === 'select') {
+	if (option.kind === 'select') {
 		return (
 			<Controller
 				name={name}
 				control={form.control}
-				render={({field}) => (
-					<div className='flex flex-col gap-1'>
+				render={({field, fieldState}) => (
+					<div className='relative flex flex-col gap-1'>
 						<div className='flex flex-row justify-between items-center'>
 							<div>
-								<label className='text-[14px] font-[400] text-white'>{meta.label}</label>
+								{fieldState.error && (
+									<p className='absolute top-10 right-1 text-xs text-red-500'>{fieldState.error.message}</p>
+								)}
+								<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 								<div className='flex flex-wrap gap-1 my-1'>
-									{meta.bitcoinLabel.split(',').map((label, index) => (
+									{option.bitcoinLabel.split(',').map((label, index) => (
 										<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 											{label.trim()}
 										</span>
@@ -261,26 +349,39 @@ function FieldRenderer({name, form}: {name: SettingName; form: ReturnType<typeof
 							</div>
 							<Select
 								value={field.value}
-								defaultValue={meta.default?.toString()}
-								onValueChange={field.onChange} // keeps React-Hook-Form in sync
+								defaultValue={option.default?.toString()}
+								onValueChange={(v) => {
+									field.onChange(v) // keeps React-Hook-Form in sync
+
+									// if version field is changed, we need to update the form with any new defaults for settings that did not exist in the previous version
+									// and revalidate with the new schema for that version
+									if (name === 'version') {
+										const previousKeys = new Set(Object.keys(settingsMetadata))
+										updateFormWhenVersionChanges(form, previousKeys, v as SelectedVersion)
+									}
+								}}
 								disabled={disabled}
 							>
-								<SelectTrigger className='w-[140px] rounded bg-[#272727] shadow-[inset_0_-1px_1px_0_rgba(255,255,255,0.2),_inset_0_1px_1px_0_rgba(0,0,0,0.36)] p-3 text-white focus:ring-0 ring-offset-0 border-none'>
+								<SelectTrigger
+									className={`rounded bg-[#272727] shadow-[inset_0_-1px_1px_0_rgba(255,255,255,0.2),_inset_0_1px_1px_0_rgba(0,0,0,0.36)] p-3 text-white focus:ring-0 ring-offset-0 border-none max-sm:text-[12px]`}
+								>
 									<SelectValue placeholder='Select…' />
 								</SelectTrigger>
 
 								<SelectContent className='bg-[#272727] shadow-[inset_0_-1px_1px_0_rgba(255,255,255,0.2),_inset_0_1px_1px_0_rgba(0,0,0,0.36)] text-white border-none'>
-									{meta.options.map((option) => (
-										<SelectItem key={option.value} value={option.value} className='cursor-pointer'>
-											{option.label}
+									{option.options.map((opt) => (
+										<SelectItem key={opt.value} value={opt.value} className='cursor-pointer'>
+											{opt.label}
 										</SelectItem>
 									))}
 								</SelectContent>
 							</Select>
 						</div>
-						<p className='text-[13px] font-[400] text-white/60'>{meta.description}</p>
-						{meta.subDescription && <p className='text-[12px] font-[400] text-white/60 mt-1'>{meta.subDescription}</p>}
-						<p className='text-[12px] font-[400] text-white/50 mt-2'>default: {meta.default}</p>
+						<p className='text-[13px] font-[400] text-white/60'>{option.description}</p>
+						{option.subDescription && (
+							<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>
+						)}
+						<p className='text-[12px] font-[400] text-white/50 mt-2'>default: {option.default}</p>
 					</div>
 				)}
 			/>
@@ -302,24 +403,44 @@ export default function SettingsCard() {
 	const {data: initialSettings, isLoading} = useSettings()
 	const updateSettings = useUpdateSettings()
 	const restoreDefaults = useRestoreDefaults()
+	// Save dialog controlled state to avoid any double-open edge cases
+	const [isSaveOpen, setIsSaveOpen] = useState(false)
+
+	// Dynamic version-aware resolver
+	// On every validate, we build a Zod resolver from schemaForVersion(current form version)
+	// TODO: If perf ever becomes an issue, we could memoize per-version resolvers in a map
+	// and select by current version, or cache the last {version,resolver} pair to avoid rebuilding.
+	const versionedResolver = useMemo(() => {
+		return async (values: any, ctx: any, opts: any) => {
+			const desired = (values?.version ?? 'latest') as string
+			const r = zodResolver(schemaForVersion(desired))
+			return r(values, ctx, opts)
+		}
+	}, [])
 
 	const form = useForm<SettingsSchema>({
-		resolver: zodResolver(settingsSchema),
+		resolver: versionedResolver as any,
 		mode: 'onChange',
-		// initially render with default values, but we'll disable the form inputs until initial settings are available
-		defaultValues,
-		// keep field values/validation even when a component unmounts.
-		// We're using shadcn/ui Tabs, which keep all <TabsContent>
-		// mounted, so technically don't need this, but it will save us
-		// if we ever refactor to conditionally render tab panels or accordins
-		// that unmount their children.
+		reValidateMode: 'onChange',
+		defaultValues: DefaultValuesForVersion(resolveVersion('latest')) as any,
 		shouldUnregister: false,
 	})
+
+	// Ref to the main settings content scroll viewport
+	const settingsViewportRef = useRef<HTMLDivElement | null>(null)
 
 	// reset form with initial settings when they are available
 	useEffect(() => {
 		if (initialSettings) form.reset(initialSettings)
 	}, [initialSettings, form])
+
+	// Live UI: resolve settings metadata for the current selection
+	// 1) Subscribe to the form's version field (can be 'latest' or a specific version)
+	const selectedVersion = (useWatch({control: form.control, name: 'version'}) as string) ?? 'latest'
+	// 2) Map the selection to a specific Knots version (e.g., 'latest' → 'v30.0')
+	const targetVersion = resolveVersion(selectedVersion as SelectedVersion)
+	// 3) Materialize version-aware metadata used to render the fields and constraints
+	const settingsMetadata = useMemo(() => settingsMetadataForVersion(targetVersion), [targetVersion])
 
 	// Clear search if navigated here with clearSearch parameter (e.g., from "View logs" button in bitcoind crash toast)
 	useEffect(() => {
@@ -382,7 +503,7 @@ export default function SettingsCard() {
 	const onRestoreDefaults = () => {
 		// If the mutation takes longer than 1 second, we show a loading toast
 		restoreTimer.current = setTimeout(() => {
-			restoreToastId.current = toast.loading('Hang tight, Bitcoin Core is restarting...', {duration: Infinity})
+			restoreToastId.current = toast.loading('Hang tight, Bitcoin Knots is restarting...', {duration: Infinity})
 		}, 1000)
 
 		restoreDefaults.mutate(undefined, {
@@ -422,15 +543,27 @@ export default function SettingsCard() {
 	// re-runs a cheap O(settings) array filter that isn't worth debouncing.
 	const matchingFields = useMemo(() => {
 		if (!search) return []
-		return (Object.keys(settingsMetadata) as SettingName[]).filter((name) => {
+		const m = settingsMetadata as Record<string, Option>
+		return (Object.keys(m) as string[]).filter((name) => {
 			// search by label or bitcoinLabel
 			// TODO: consider adding description as well
-			const {label, bitcoinLabel} = settingsMetadata[name]
+			const {label, bitcoinLabel} = m[name]
 			return label.toLowerCase().includes(search) || bitcoinLabel.toLowerCase().includes(search)
 		})
-	}, [search])
+	}, [search, settingsMetadata])
 
 	const isSearching = search.length > 0
+
+	// This array drives both the tab triggers (navigation) and tab content rendering
+	const tabs = [
+		{value: 'peers', label: 'Peer Settings'},
+		{value: 'optimization', label: 'Optimization'},
+		{value: 'rpc-rest', label: 'RPC and REST'},
+		{value: 'network', label: 'Network Selection'},
+		{value: 'version', label: 'Bitcoin Knots Version'},
+		{value: 'advanced', label: 'Advanced'},
+		{value: 'policy', label: 'Policy'},
+	] as const
 
 	return (
 		<SettingsDisabledContext.Provider value={isInputsDisabled}>
@@ -471,12 +604,19 @@ export default function SettingsCard() {
 								>
 									<FadeScrollArea className='w-full'>
 										<TabsList className='relative flex bg-transparent rounded-none h-auto p-0 gap-1 z-10 w-max'>
-											<SettingsTabTrigger value='peers'>Peer Settings</SettingsTabTrigger>
-											<SettingsTabTrigger value='optimization'>Optimization</SettingsTabTrigger>
-											<SettingsTabTrigger value='rpc-rest'>RPC and REST</SettingsTabTrigger>
-											<SettingsTabTrigger value='network'>Network Selection</SettingsTabTrigger>
-											<SettingsTabTrigger value='policy'>Policy</SettingsTabTrigger>
-											<SettingsTabTrigger value='advanced'>Advanced</SettingsTabTrigger>
+											{/* Render tab triggers dynamically from the tabs configuration */}
+											{tabs.map((tab) => (
+												<SettingsTabTrigger
+													key={tab.value}
+													value={tab.value}
+													control={form.control}
+													names={Object.keys(settingsMetadata).filter(
+														(k) => (settingsMetadata as any)[k].tab === tab.value,
+													)}
+												>
+													{tab.label}
+												</SettingsTabTrigger>
+											))}
 										</TabsList>
 									</FadeScrollArea>
 								</div>
@@ -487,6 +627,9 @@ export default function SettingsCard() {
 									// We use a key to reset scroll position when switching tabs or search
 									key={isSearching ? 'search' : currentTab}
 									className='h-[calc(100dvh-425px)] md:h-[calc(100dvh-390px)] [--fade-top:hsla(0,0%,6%,1)][--fade-bottom:hsla(0,0%,3%,1)]'
+									viewportRef={(el) => {
+										settingsViewportRef.current = el
+									}}
 								>
 									{isSearching ? (
 										matchingFields.length === 0 ? (
@@ -498,48 +641,58 @@ export default function SettingsCard() {
 													// styling to exactly match when rendered inside tabs
 													className={i < matchingFields.length - 1 ? 'border-b-[1px] border-white/20 pb-6 mb-6' : ''}
 												>
-													<FieldRenderer name={name} form={form} />
+													<FieldRenderer name={name} form={form} settingsMetadata={settingsMetadata as any} />
 												</div>
 											))
 										)
 									) : (
 										<>
-											<TabsContent value='peers' className='space-y-6 pt-6'>
-												<SettingsTabContent tab='peers' form={form} />
-											</TabsContent>
+											{/* Render tab content dynamically from the tabs configuration */}
+											{tabs.map((tab) => (
+												<TabsContent key={tab.value} value={tab.value} className='space-y-6 pt-6'>
+													{/* Special handling for version tab since we have a special error alert for it */}
+													{tab.value === 'version' && (
+														<AnimatePresence mode='wait' initial={false}>
+															{currentTab === 'version' && Object.values(form.formState.errors).length > 0 && (
+																<motion.div
+																	initial={{height: 0, opacity: 0, marginBottom: 0}}
+																	animate={{height: 'auto', opacity: 1, marginBottom: 20}}
+																	exit={{height: 0, opacity: 0, marginBottom: 0}}
+																	transition={{
+																		type: 'spring',
+																		stiffness: 250,
+																		damping: 30,
+																		duration: 0.45,
+																	}}
+																	style={{overflow: 'hidden'}}
+																>
+																	<IncompatibleSettingsAlert />
+																</motion.div>
+															)}
+														</AnimatePresence>
+													)}
 
-											<TabsContent value='optimization' className='space-y-6 pt-6'>
-												<SettingsTabContent tab='optimization' form={form} />
-											</TabsContent>
+													{/* Special handling for advanced tab since it renders unique content (custom config editor etc.) */}
+													{/* Currently we don't have anything from settings.meta.ts that shows up in advanced. */}
+													{tab.value === 'advanced' && (
+														<>
+															{/* TODO: the error log feels a bit clunky being under "Advanced". */}
+															<DangerZoneAlert />
+															<CustomConfigEditor />
+															<BitcoindErrorLog settingsViewportRef={settingsViewportRef} />
+														</>
+													)}
 
-											<TabsContent value='rpc-rest' className='space-y-6 pt-6'>
-												<SettingsTabContent tab='rpc-rest' form={form} />
-											</TabsContent>
-
-											<TabsContent value='network' className='space-y-6 pt-6'>
-												<SettingsTabContent tab='network' form={form} />
-											</TabsContent>
-
-											<TabsContent value='policy' className='space-y-6 pt-6'>
-												<SettingsTabContent tab='policy' form={form} />
-											</TabsContent>
-
-											<TabsContent value='advanced' className='space-y-6 pt-6'>
-												{/* TODO: determine where to place the log */}
-												<DangerZoneAlert />
-												<CustomConfigEditor />
-												<BitcoindErrorLog />
-
-												{/* Currently we don't have anything from settings.meta.ts that shows up in advanced. */}
-												<SettingsTabContent tab='advanced' form={form} />
-											</TabsContent>
+													<SettingsTabContent tab={tab.value} form={form} settingsMetadata={settingsMetadata as any} />
+												</TabsContent>
+											))}
 										</>
 									)}
 								</FadeScrollArea>
 							</Tabs>
 							{/* )} */}
 						</CardContent>
-						<CardFooter className='justify-end flex gap-2'>
+						<CardFooter className='justify-between sm:justify-end flex gap-2'>
 							{/* RESTORE DEFAULTS BUTTON */}
 							<AlertDialog>
 								<AlertDialogTrigger asChild>
@@ -557,9 +710,27 @@ export default function SettingsCard() {
 										<AlertDialogTitle className='font-outfit text-white text-[20px] font-[400] text-left'>
 											Restore default settings?
 										</AlertDialogTitle>
-										<AlertDialogDescription className='text-white/60 text-left text-[13px]'>
-											This will restore your current settings to the default values. You cannot undo this action. This
-											will not overwrite any custom overrides you've set under the "Advanced" tab on the Settings page.
+										<AlertDialogDescription className='text-white/60 text-left text-[13px] space-y-3'>
+											<p>
+												This will restore your current settings to the default values. You cannot undo this action. This
+												will not overwrite any custom overrides you've set under the "Advanced" tab on the Settings
+												page.
+											</p>
+											{(() => {
+												const currentVersion = form.getValues().version ?? 'latest'
+												if (currentVersion !== 'latest') {
+													return (
+														<div className='bg-orange-500/10 border border-orange-500/20 rounded-md p-3'>
+															<p className='text-orange-200 text-xs'>
+																You have manually chosen to stay on Bitcoin Knots Version {currentVersion}. Restoring
+																defaults will use the default settings for Bitcoin Knots {currentVersion}, not the latest
+																version.
+															</p>
+														</div>
+													)
+												}
+												return null
+											})()}
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 
@@ -574,12 +745,23 @@ export default function SettingsCard() {
 
 							{/* SAVE BUTTON */}
 							<Button
-								type='submit'
+								type='button'
 								// We don't allow saving if the form is not dirty (meaning it is unchanged), is invalid, if we're still loading initial settings, if the form is submitting, or if the updated settings are pending
 								disabled={!isDirty || !isValid || isLoading || isSubmitting || updateSettings.isPending}
+								onClick={() => setIsSaveOpen(true)}
 							>
 								Save changes
 							</Button>
+							<SaveSettingsDialog
+								open={isSaveOpen}
+								onOpenChange={setIsSaveOpen}
+								onSave={() => {
+									const submit = form.handleSubmit(onUpdateSettings)
+									submit()
+								}}
+								initialSettings={initialSettings}
+								formValues={form.getValues()}
+							/>
 						</CardFooter>
 					</Card>
 				</Form>

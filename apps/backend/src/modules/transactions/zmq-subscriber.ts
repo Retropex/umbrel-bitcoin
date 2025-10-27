@@ -1,4 +1,4 @@
-// Bitcoin Core's ZMQ `pubhashtx` transaction notifier is NOT SILENT during IBD and initial Bitcoin Core startup (unlike `pubhashblock`)
+// Bitcoin Knots ZMQ `pubhashtx` transaction notifier is NOT SILENT during IBD and initial Bitcoin Knots startup (unlike `pubhashblock`)
 // We  wait until the mempool is loaded and IBD is complete before subscribing to `pubhashtx` or else we would receive a flood of tx notifications during startup and all throughout IBD
 //
 // IBD behaviour:
