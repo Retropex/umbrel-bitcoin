@@ -1,21 +1,21 @@
 // This settings metadata file is used as a single source of truth for deriving the following:
-// - validation schema per Bitcoin Core version (settings.schema.ts)
-// - default settings values per Bitcoin Core version
+// - validation schema per Bitcoin Knots version (settings.schema.ts)
+// - default settings values per Bitcoin Knots version
 // - The frontend settings page (React form inputs, descriptions, tool-tips, etc.)
 // To add a new bitcoin.conf option, just add a new block to the `settingsMetadata` object and check that it is being written to the conf file correctly.
 
-// Available Bitcoin Core versions
+// Available Bitcoin Knots versions
 // IMPORTANT:
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
-export const AVAILABLE_BITCOIN_CORE_VERSIONS = ['v29.2', 'v29.1'] as const
+export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.2', 'v29.1'] as const
 
-// Default Bitcoin Core version used by bitcoind manager (always the newest version in the array)
-export const DEFAULT_BITCOIN_CORE_VERSION = AVAILABLE_BITCOIN_CORE_VERSIONS[0]
-export type BitcoinCoreVersion = (typeof AVAILABLE_BITCOIN_CORE_VERSIONS)[number]
+// Default Bitcoin Knots version used by bitcoind manager (always the newest version in the array)
+export const DEFAULT_BITCOIN_KNOTS_VERSION = AVAILABLE_BITCOIN_KNOTS_VERSIONS[0]
+export type BitcoinKnotsVersion = (typeof AVAILABLE_BITCOIN_KNOTS_VERSIONS)[number]
 
 export const LATEST = 'latest' as const
-export const VERSION_CHOICES = [LATEST, ...AVAILABLE_BITCOIN_CORE_VERSIONS] as const
+export const VERSION_CHOICES = [LATEST, ...AVAILABLE_BITCOIN_KNOTS_VERSIONS] as const
 export type SelectedVersion = (typeof VERSION_CHOICES)[number]
 
 // Tabs for organization (used in the UI to group settings)
@@ -62,7 +62,7 @@ interface MultiOption extends BaseOption {
 export type Option = NumberOption | BooleanOption | SelectOption | MultiOption
 
 // Optional per-version differences (overrides) for rule fields
-// e.g., if the default value for a setting changes between Core versions, we can override the default value for specific versions.
+// e.g., if the default value for a setting changes between Knots versions, we can override the default value for specific versions.
 type VersionOverrides = Partial<{
 	default: unknown
 	min: number
@@ -80,9 +80,9 @@ type VersionOverrides = Partial<{
 // - removedIn is exclusive (i.e., not available starting with this version)
 // - versionOverrides carries tiny per-version diffs for rule fields only
 export type VersionedOption = Option & {
-	introducedIn?: BitcoinCoreVersion // inclusive
-	removedIn?: BitcoinCoreVersion // exclusive
-	versionOverrides?: Partial<Record<BitcoinCoreVersion, VersionOverrides>>
+	introducedIn?: BitcoinKnotsVersion // inclusive
+	removedIn?: BitcoinKnotsVersion // exclusive
+	versionOverrides?: Partial<Record<BitcoinKnotsVersion, VersionOverrides>>
 }
 
 // NOTE: this is the single source of truth for the settings metadata. Everything is derived from this object (versioned metadata, versioned schema, default values, UI fields, etc).
@@ -167,7 +167,7 @@ export const settingsMetadata = {
 			'Share compact block filter data with connected light clients (like wallets) connected to your node, allowing them to get only the transaction information they are interested in from your node without having to download the entire blockchain. Enabling this will automatically enable Block Filter Index below.',
 		subDescription:
 			'⚠ This setting requires Block Filter Index to be enabled (this will be enforced automatically when you save with this setting enabled). If you disable Peer Block Filters, you will need to also manually toggle off Block Filter Index if you want to stop storing block filter data.',
-		// Bitcoind Core's default for this is false
+		// Bitcoind Knots default for this is false
 		default: true,
 	},
 
@@ -181,7 +181,7 @@ export const settingsMetadata = {
 			'Store an index of compact block filters which allows faster wallet re-scanning. In order to serve compact block filters to peers, you must also enable Peer Block Filters above.',
 		subDescription:
 			'⚠ To use Block Filter Index with a pruned node, you must enable it when you start the Prune Old Blocks process under the Optimization category. If your node is already pruned and Block Filter Index is off, enabling it will prevent your node from starting. To fix this while keeping Block Filter Index on, you will need to either reindex your node or turn off Prune Old Blocks.',
-		// Bitcoind Core's default for this is false
+		// Bitcoind Knots default for this is false
 		default: true,
 	},
 
@@ -336,14 +336,12 @@ export const settingsMetadata = {
 		description: 'Enable transaction indexing to speed up transaction lookups.',
 		subDescription:
 			'⚠ Many connected apps and services will not work without txindex enabled, so make sure you understand the implications before disabling it. txindex is automatically disabled when pruning is enabled.',
-		// bitcoin core default is false, but we our default is true
+		// bitcoin Knots default is false, but we our default is true
 		default: true,
 		/** UI hint: disable when prune > 0 */
 		disabledWhen: {prune: (v: unknown) => (v as number) > 0},
 		disabledMessage: 'automatically disabled when pruning is enabled',
 	},
-
-	// mempoolfullrbf - no longer an option as of Core 28.0.0
 
 	datacarrier: {
 		tab: 'policy',
@@ -597,8 +595,8 @@ export const settingsMetadata = {
 		description:
 			'Set the maximum number of queued Remote Procedure Call (RPC) requests your node can handle (e.g., from connected wallets or other apps), helping you strike a balance between performance and resource usage. Higher values can improve processing speed at the cost of increased system resources.',
 		step: 1,
-		// Bitcoin Core's default is 64, but we use 128
-		// No min or max in Core, but we should set a min here to avoid the user breaking the UI which relies on RPC calls to show data
+		// Bitcoin Knots default is 64, but we use 128
+		// No min or max in Knots, but we should set a min here to avoid the user breaking the UI which relies on RPC calls to show data
 		min: 1,
 		default: 128,
 		unit: 'requests',
@@ -627,7 +625,7 @@ export const settingsMetadata = {
 			'⚠ If you choose to stay on a specific version, please make sure your chosen version is up to date with the latest security fixes.',
 		options: [
 			{value: LATEST, label: 'Always use the latest version'},
-			...AVAILABLE_BITCOIN_CORE_VERSIONS.map((version) => ({value: version, label: version})),
+			...AVAILABLE_BITCOIN_KNOTS_VERSIONS.map((version) => ({value: version, label: version})),
 		],
 		default: LATEST,
 	},
@@ -651,22 +649,22 @@ export const settingsMetadata = {
 	},
 } satisfies Record<string, VersionedOption>
 
-// Gets the concrete Bitcoin Core version for a given selected version
-export function resolveVersion(desired: SelectedVersion): BitcoinCoreVersion {
+// Gets the concrete Bitcoin Knots version for a given selected version
+export function resolveVersion(desired: SelectedVersion): BitcoinKnotsVersion {
 	// We always resolve 'latest' to the default version
-	return desired === LATEST ? DEFAULT_BITCOIN_CORE_VERSION : desired
+	return desired === LATEST ? DEFAULT_BITCOIN_KNOTS_VERSION : desired
 }
 
-// Creates the version‑specific metadata for a given Bitcoin Core version:
-export function settingsMetadataForVersion(version: BitcoinCoreVersion) {
+// Creates the version‑specific metadata for a given Bitcoin Knots version:
+export function settingsMetadataForVersion(version: BitcoinKnotsVersion) {
 	const metadata: Record<string, Option> = {}
-	const versionIdx = AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(version)
+	const versionIdx = AVAILABLE_BITCOIN_KNOTS_VERSIONS.indexOf(version)
 
 	// Loop through each settingsMetadata entry and build the versioned metadata
 	for (const [key, value] of Object.entries(settingsMetadata) as Array<[string, VersionedOption]>) {
-		// Skip the setting entirely if it is not in the specified Bitcoin Core version
-		if (value.introducedIn && versionIdx > AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(value.introducedIn)) continue
-		if (value.removedIn && versionIdx <= AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(value.removedIn)) continue
+		// Skip the setting entirely if it is not in the specified Bitcoin Knots version
+		if (value.introducedIn && versionIdx > AVAILABLE_BITCOIN_KNOTS_VERSIONS.indexOf(value.introducedIn)) continue
+		if (value.removedIn && versionIdx <= AVAILABLE_BITCOIN_KNOTS_VERSIONS.indexOf(value.removedIn)) continue
 
 		// Merge the versioned metadata with the version overrides
 		const merged = {
@@ -685,8 +683,8 @@ export function settingsMetadataForVersion(version: BitcoinCoreVersion) {
 	return metadata
 }
 
-// Compute default form values for a given Bitcoin Core version.
-export function DefaultValuesForVersion(version: BitcoinCoreVersion) {
+// Compute default form values for a given Bitcoin Knots version.
+export function DefaultValuesForVersion(version: BitcoinKnotsVersion) {
 	const metadata = settingsMetadataForVersion(version)
 	const defaults = {} as Record<string, unknown>
 	for (const key in metadata) defaults[key] = (metadata as Record<string, {default: unknown}>)[key].default

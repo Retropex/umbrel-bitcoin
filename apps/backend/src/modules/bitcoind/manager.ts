@@ -5,14 +5,14 @@ import readline from 'node:readline'
 import fse from 'fs-extra'
 
 import type {ExitInfo} from '#types'
-import {DEFAULT_BITCOIN_CORE_VERSION} from '#settings'
+import {DEFAULT_BITCOIN_KNOTS_VERSION} from '#settings'
 
 import {
 	BITCOIND_BIN,
 	BITCOIN_DIR,
 	SETTINGS_JSON,
-	BITCOIN_CORE_VERSIONS_DIR,
-	BITCOIN_CORE_CURRENT_SYMLINK,
+	BITCOIN_KNOTS_VERSIONS_DIR,
+	BITCOIN_KNOTS_CURRENT_SYMLINK,
 } from '../../lib/paths.js'
 
 // Version helpers
@@ -22,16 +22,16 @@ function getVersionFromSettings(): string {
 		const json = fse.readJsonSync(SETTINGS_JSON)
 		if (typeof json.version === 'string' && json.version.length) {
 			// If the version is 'latest', use the default version which is the latest available version we've packaged
-			return json.version === 'latest' ? DEFAULT_BITCOIN_CORE_VERSION : json.version
+			return json.version === 'latest' ? DEFAULT_BITCOIN_KNOTS_VERSION : json.version
 		}
 	} catch {}
-	return DEFAULT_BITCOIN_CORE_VERSION
+	return DEFAULT_BITCOIN_KNOTS_VERSION
 }
 
 function isVersionInstalled(version: string): boolean {
 	try {
 		// Check if the bitcoind binary exists and is executable
-		fse.accessSync(`${BITCOIN_CORE_VERSIONS_DIR}/${version}/bitcoind`, fse.constants.X_OK)
+		fse.accessSync(`${BITCOIN_KNOTS_VERSIONS_DIR}/${version}/bitcoind`, fse.constants.X_OK)
 		return true
 	} catch {
 		return false
@@ -147,7 +147,7 @@ export class BitcoindManager {
 		if (!isVersionInstalled(version)) {
 			// Reflect the desired version in versionInfo so the UI shows intent, not the current symlink
 			this.versionInfo = {...this.versionInfo, version}
-			const msg = `Bitcoin Core version "${version}" is not installed (missing: ${BITCOIN_CORE_VERSIONS_DIR}/${version}/bitcoind).`
+			const msg = `Bitcoin Knots version "${version}" is not installed (missing: ${BITCOIN_KNOTS_VERSIONS_DIR}/${version}/bitcoind).`
 			this.lastError = new Error(msg)
 			this.exitInfo = {
 				code: null,
@@ -162,7 +162,7 @@ export class BitcoindManager {
 		}
 
 		// flip the single pointer used by both daemon and CLI
-		execFileSync('ln', ['-sfn', `${BITCOIN_CORE_VERSIONS_DIR}/${version}`, BITCOIN_CORE_CURRENT_SYMLINK])
+		execFileSync('ln', ['-sfn', `${BITCOIN_KNOTS_VERSIONS_DIR}/${version}`, BITCOIN_KNOTS_CURRENT_SYMLINK])
 
 		// Refresh binary version info (the PATH 'bitcoind' now resolves to the target bitcoind binary)
 		this.versionInfo = this.getBinaryVersionInfo()
@@ -196,7 +196,7 @@ export class BitcoindManager {
 				code,
 				sig,
 				logTail: [...this.logRing],
-				message: `Bitcoin Core stopped (code ${code ?? 'null'})`,
+				message: `Bitcoin Knots stopped (code ${code ?? 'null'})`,
 			}
 
 			this.events.emit('exit', this.exitInfo)

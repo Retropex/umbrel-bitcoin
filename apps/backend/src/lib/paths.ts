@@ -21,11 +21,11 @@ export const SETTINGS_JSON = path.join(APP_STATE_DIR, 'settings.json')
 export const BITCOIN_CONF = path.join(BITCOIN_DIR, 'bitcoin.conf')
 export const UMBREL_BITCOIN_CONF = path.join(BITCOIN_DIR, 'umbrel-bitcoin.conf')
 
-// Bitcoin Core installation path for bitcoind versions
-export const BITCOIN_CORE_VERSIONS_DIR = '/opt/bitcoind'
+// Bitcoin Knots installation path for bitcoind versions
+export const BITCOIN_KNOTS_VERSIONS_DIR = '/opt/bitcoind'
 
 // Symbolic link for default bitcoind binary
-export const BITCOIN_CORE_CURRENT_SYMLINK = `${BITCOIN_CORE_VERSIONS_DIR}/current`
+export const BITCOIN_KNOTS_CURRENT_SYMLINK = `${BITCOIN_KNOTS_VERSIONS_DIR}/current`
 
 // Ensure that the required data directories exist
 export async function ensureDirs() {

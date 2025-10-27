@@ -143,7 +143,7 @@ export async function migrateLegacyConfig(): Promise<SettingsSchema | undefined>
 	try {
 		const latestVersion = resolveVersion(LATEST)
 		const defaultValues = DefaultValuesForVersion(latestVersion)
-		// Merge defaults for latest Bitcoin Core version with coerced legacy values and validate against the
+		// Merge defaults for latest Bitcoin Knots version with coerced legacy values and validate against the
 		// versioned schema to produce a clean, current settings.json
 		const validated = schemaForVersion(LATEST).parse({
 			...defaultValues,

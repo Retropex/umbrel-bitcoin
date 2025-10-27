@@ -41,10 +41,10 @@ function mergeWithDefaults(partial: Partial<SettingsSchema>): SettingsSchema {
 	return {...defaults, ...partial} as SettingsSchema
 }
 
-// Keep only keys valid for the selected Bitcoin Core version.
+// Keep only keys valid for the selected Bitcoin Knots version.
 // Our zod schema is `.passthrough()` (to avoid UX issues during version switches),
 // so stale/unknown keys could otherwise survive frontend validation. This filter ensures we only
-// persist settings that exist for the resolved Core version.
+// persist settings that exist for the resolved Knots version.
 function filterSettingsForVersion(
 	input: Record<string, unknown>,
 	selectedVersion: SelectedVersion,
@@ -101,7 +101,7 @@ function generateBaseConfLines(settings: SettingsSchema): string[] {
 	for (const key of Object.keys(settings) as (keyof SettingsSchema)[]) {
 		const value = settings[key]
 
-		// Skip settings that should not be written to bitcoin.conf (e.g, bitcoin core version)
+		// Skip settings that should not be written to bitcoin.conf (e.g, bitcoin Knots version)
 		if (NON_BITCOIN_CONF_KEYS.has(key)) continue
 
 		switch (key) {
@@ -416,7 +416,7 @@ export async function updateSettings(patch: Partial<SettingsSchema>): Promise<Se
 
 // Restore defaults for the settings.json and umbrel-bitcoin.conf files.
 // We do not touch any custom overrides the user has made to the bitcoin.conf file.
-// Note: This preserves the current Bitcoin Core version if the user has pinned one (or falls back to LATEST) - it does NOT force a switch to the latest version.
+// Note: This preserves the current Bitcoin Knots version if the user has pinned one (or falls back to LATEST) - it does NOT force a switch to the latest version.
 export async function restoreDefaults(): Promise<SettingsSchema> {
 	const current = await getSettings().catch(() => undefined)
 	// Preserve the current version choice (or fall back to LATEST) - don't force upgrade to latest

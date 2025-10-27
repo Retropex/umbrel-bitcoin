@@ -1,4 +1,4 @@
-// This is our validation schema that is derived from the settings metadata and Bitcoin Core version.
+// This is our validation schema that is derived from the settings metadata and Bitcoin Knots version.
 // TODO: Consider adding a `superRefine` to handle cross-field validation.
 
 import {z} from 'zod'
@@ -64,9 +64,9 @@ function buildSettingsSchema(settingsMetadata: Record<string, Option>): z.ZodObj
 	return z.object(schemaMap).passthrough()
 }
 
-// Build a version-aware schema that validates the settings against the resolved settings-metadata for the given Core version.
+// Build a version-aware schema that validates the settings against the resolved settings-metadata for the given Knots version.
 export function schemaForVersion(version: SelectedVersion) {
-	// Resolve the desired version (can be 'latest' or a specific Bitcoin Core version) to a concrete Core version
+	// Resolve the desired version (can be 'latest' or a specific Bitcoin Knots version) to a concrete Knots version
 	const bitcoinVersion = resolveVersion(version)
 	const settingsMetadata = settingsMetadataForVersion(bitcoinVersion)
 	return buildSettingsSchema(settingsMetadata)

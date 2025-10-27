@@ -57,7 +57,7 @@ COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
-# By default we point to the latest version of Bitcoin Core
+# By default we point to the latest version of Bitcoin Knots
 RUN ln -sfn /opt/bitcoind/v29.2 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli

@@ -16,7 +16,7 @@ import type {SyncStage} from '@/lib/sync-progress'
 // We skip polling and WebSocket during `pre-headers` and `headers` stages
 
 // TODO: If bitcoind has already undergone IBD, and then is off for a while and then comes back online with many
-// blocks to catch up on, does Core show IBD again?
+// blocks to catch up on, does Knots show IBD again?
 
 export function useLatestBlocks({limit = 5, stage}: {limit?: number; stage: SyncStage}) {
 	const qc = useQueryClient()
