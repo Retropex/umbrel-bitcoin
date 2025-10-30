@@ -1,11 +1,15 @@
 import {BitcoindManager} from './manager.js'
 import {ensureConfig} from '../config/config.js'
+import {getVersionFromRPC} from './rpc-client.js'
 
 import type {BitcoindVersion, BitcoindStatus, BitcoindLifecycleResponse, ExitInfo} from '#types'
 import type WebSocket from 'ws'
 
+// Check if we should connect to an external bitcoind instance
+const externalMode = process.env['BITCOIND_EXTERNAL_MODE'] === 'true'
+
 // Single bitcoind manager instance that is used throughout the backend
-export const bitcoind = new BitcoindManager()
+export const bitcoind = new BitcoindManager({externalMode})
 
 // Boot up bitcoind
 export async function bootBitcoind(): Promise<void> {
@@ -18,7 +22,18 @@ export async function bootBitcoind(): Promise<void> {
 // Public façade for the singleton BitcoindManager.
 // Gives routes a one-liner API: `app.post('/restart', bitcoind.restart)`.
 
-export const version = (): BitcoindVersion => bitcoind.versionInfo
+export const version = async (): Promise<BitcoindVersion> => {
+	// Try to get version from RPC first (works for both external and local)
+	const rpcVersion = await getVersionFromRPC()
+	
+	// If RPC call succeeded, return that version
+	if (rpcVersion.version !== 'unknown') {
+		return rpcVersion
+	}
+	
+	// Otherwise fall back to the manager's cached version info
+	return bitcoind.versionInfo
+}
 
 export const status = (): BitcoindStatus => bitcoind.status()
 

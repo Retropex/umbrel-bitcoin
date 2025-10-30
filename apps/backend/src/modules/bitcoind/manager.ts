@@ -64,6 +64,7 @@ type BitcoindManagerOptions = {
 	binary?: string
 	datadir?: string
 	extraArgs?: string[]
+	externalMode?: boolean // If true, connects to external bitcoind instead of spawning a process
 }
 
 export class BitcoindManager {
@@ -71,6 +72,7 @@ export class BitcoindManager {
 	private readonly bin: string
 	private readonly datadir: string
 	private readonly extraArgs: string[]
+	private readonly externalMode: boolean
 	public versionInfo: {implementation: string; version: string}
 	private startedAt: number | null = null
 	private lastError: Error | null = null
@@ -97,9 +99,10 @@ export class BitcoindManager {
 	// flag to prevent emitting an exit event if we are purposefully stopping bitcoind (e.g., changing config via the UI)
 	private expectingExit = false
 
-	constructor({binary = BITCOIND_BIN, datadir = BITCOIN_DIR, extraArgs = []}: BitcoindManagerOptions = {}) {
+	constructor({binary = BITCOIND_BIN, datadir = BITCOIN_DIR, extraArgs = [], externalMode = false}: BitcoindManagerOptions = {}) {
 		this.bin = binary
 		this.datadir = datadir
+		this.externalMode = externalMode
 
 		// Grab extra flags from env, if present
 		// This allows us to add extra flags in the app store compose file without changing this codebase
@@ -138,6 +141,18 @@ export class BitcoindManager {
 	// Spawn bitcoind as a child process
 	// TODO: decide if we want to auto-restart on exit ever
 	start() {
+		// If in external mode, don't spawn a process - just mark as started
+		if (this.externalMode) {
+			console.log('[bitcoind-manager] External mode: skipping process spawn, connecting to external bitcoind')
+			this.startedAt = Date.now()
+			this.lastError = null
+			// Refresh binary version info from external instance
+			//this.versionInfo = this.getBinaryVersionInfo()
+			// Emit start event for zmq hashtx subscriber
+			this.events.emit('start')
+			return
+		}
+
 		// return early if already running
 		if (this.child) return
 
@@ -228,12 +243,21 @@ export class BitcoindManager {
 
 	// Restart bitcoind
 	async restart() {
+		// In external mode, we can't restart the external bitcoind
+		if (this.externalMode) {
+			console.log('[bitcoind-manager] External mode: cannot restart external bitcoind')
+			return
+		}
 		await this.stop()
 		this.start()
 	}
 
 	// Child process status
 	status() {
+		// In external mode, we assume it's always running
+		if (this.externalMode) {
+			return {running: true, startedAt: this.startedAt, error: this.lastError, pid: null}
+		}
 		return {running: !!this.child, startedAt: this.startedAt, error: this.lastError, pid: this.child?.pid ?? null}
 	}
 }

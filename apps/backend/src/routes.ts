@@ -25,7 +25,7 @@ export default fp(async (app: FastifyInstance) => {
 	// bitcoind manager routes
 	const bitcoindBase = `${BASE}/bitcoind`
 
-	app.get(`${bitcoindBase}/version`, bitcoind.version)
+	app.get(`${bitcoindBase}/version`, async () => await bitcoind.version())
 	app.get(`${bitcoindBase}/status`, bitcoind.status)
 	// app.post(`${bitcoindBase}/start`, bitcoind.start)
 	// app.post(`${bitcoindBase}/stop`, bitcoind.stop)

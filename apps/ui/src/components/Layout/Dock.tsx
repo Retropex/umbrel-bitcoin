@@ -41,13 +41,6 @@ export default function Dock({className}: {className?: string}) {
 					label='Insights'
 					active={activeTab === 'insights'}
 				/>
-				<DockTrigger
-					value='settings'
-					to='/settings'
-					Icon={SettingsIcon}
-					label='Settings'
-					active={activeTab === 'settings'}
-				/>
 			</TabsList>
 		</Tabs>
 	)

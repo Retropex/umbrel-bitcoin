@@ -13,7 +13,6 @@ export const router = createBrowserRouter(
 		<Route element={<Layout />}>
 			<Route index element={<HomePage />} />
 			<Route path='insights' element={<InsightsPage />} />
-			<Route path='settings' element={<SettingsPage />} />
 			<Route path='*' element={<NotFoundPage />} />
 		</Route>,
 	),

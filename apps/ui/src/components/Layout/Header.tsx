@@ -6,7 +6,6 @@ import {cn} from '@/lib/utils'
 // It also gives us the same behaviors as normal DOM elements—easy to size, recolor, and animate.
 import Logo from '@/assets/logo.svg?react'
 
-import ConnectionDetails from '@/components/ConnectionDetails'
 import {useBitcoindVersion} from '@/hooks/useBitcoind'
 
 export default function Header({className}: {className?: string}) {
@@ -40,10 +39,6 @@ export default function Header({className}: {className?: string}) {
 						</span>
 					</p>
 				</div>
-			</div>
-			<div>
-				{/* Connect button + modal */}
-				<ConnectionDetails />
 			</div>
 		</header>
 	)
