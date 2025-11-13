@@ -8,24 +8,20 @@ export const rpcClient = new Client({
 
 // Type for getgeneralinfo RPC response
 export type GeneralInfo = {
-	clientversion: string
-	useragent: string
-	datadir: string
-	blocksdir: string
-	startuptime: number
+	subversion: string
 }
 
 // Helper function to get version info from RPC
 export async function getVersionFromRPC(): Promise<{implementation: string; version: string}> {
 	try {
-		const info = await rpcClient.command<GeneralInfo>('getgeneralinfo')
+		const info = await rpcClient.command<GeneralInfo>('getnetworkinfo')
 		
 		// Extract implementation from useragent (e.g., "/Satoshi:29.2.0/Knots:20251010/" -> "Bitcoin Knots")
-		const useragent = info.useragent || ''
-		const implementation = useragent.includes('Knots') ? 'Bitcoin Knots' : 'Bitcoin Core'
+		const subversion = info.subversion || ''
+		const implementation = subversion.includes('Knots') ? 'Bitcoin Knots' : 'Bitcoin Core'
 		
 		// Use clientversion directly (e.g., "v29.2.0.knots20251010")
-		const version = info.clientversion || 'unknown'
+		const version = info.subversion || 'unknown'
 		
 		return {implementation, version}
 	} catch (error) {

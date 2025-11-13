@@ -25,14 +25,7 @@ export async function bootBitcoind(): Promise<void> {
 export const version = async (): Promise<BitcoindVersion> => {
 	// Try to get version from RPC first (works for both external and local)
 	const rpcVersion = await getVersionFromRPC()
-	
-	// If RPC call succeeded, return that version
-	if (rpcVersion.version !== 'unknown') {
-		return rpcVersion
-	}
-	
-	// Otherwise fall back to the manager's cached version info
-	return bitcoind.versionInfo
+	return rpcVersion
 }
 
 export const status = (): BitcoindStatus => bitcoind.status()

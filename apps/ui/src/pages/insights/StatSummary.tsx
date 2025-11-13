@@ -87,7 +87,7 @@ export default function StatSummary() {
 					label='Blockchain Size'
 					value={chainVal}
 					unit={chainUnit}
-					description={`This is the space used by the block data and the undo information that lets your node rewind blocks if needed. It grows with every new block unless pruning is enabled from the Bitcoin Knots service settings. The number excludes the UTXO database, index files, wallets, and logs.
+					description={`This is the space used by the block data and the undo information that lets your node rewind blocks if needed. It grows with every new block unless pruning is enabled from the Bitcoin node service settings. The number excludes the UTXO database, index files, wallets, and logs.
 
 											• Full node: shows the entire size of the blockchain.
 
