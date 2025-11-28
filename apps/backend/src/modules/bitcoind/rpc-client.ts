@@ -1,9 +1,26 @@
 import Client from 'bitcoin-core'
+import fs from 'fs'
+
+function readCookieFile(cookiePath: string): {username: string; password: string} | null {
+    try {
+        const cookie = fs.readFileSync(cookiePath, 'utf8').trim()
+        const [username, password] = cookie.split(':')
+        return {username, password}
+	console.log('username:', username)
+	console.log('password:', password)
+    } catch (error) {
+        console.error('[rpc-client] Failed to read cookie file:', error)
+        return null
+    }
+}
+
+const cookiePath = process.env['RPC_COOKIE']
+const credentials = readCookieFile(cookiePath)
 
 export const rpcClient = new Client({
 	host: `http://${process.env['BITCOIND_IP'] || '127.0.0.1'}:${process.env['RPC_PORT'] || '8332'}`,
-	username: process.env['RPC_USER'] || 'umbrel',
-	password: process.env['RPC_PASS'] || 'moneyprintergobrrr',
+	username: credentials?.username,
+	password: credentials?.password,
 })
 
 // Type for getgeneralinfo RPC response
