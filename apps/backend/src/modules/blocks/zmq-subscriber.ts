@@ -12,7 +12,7 @@ export const blockStream = new EventEmitter()
 async function startBlockSubscriber(): Promise<void> {
 	const subscriber = new zmq.Subscriber()
 
-	subscriber.connect(`tcp://bitcoind.embassy:${process.env['ZMQ_HASHBLOCK_PORT'] || '28334'}`)
+	subscriber.connect(`tcp://bitcoind.startos:${process.env['ZMQ_HASHBLOCK_PORT'] || '28334'}`)
 	subscriber.subscribe('hashblock')
 
 	for await (const [, hashBuffer] of subscriber) {

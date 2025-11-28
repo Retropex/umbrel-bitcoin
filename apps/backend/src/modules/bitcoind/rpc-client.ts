@@ -6,8 +6,6 @@ function readCookieFile(cookiePath: string): {username: string; password: string
         const cookie = fs.readFileSync(cookiePath, 'utf8').trim()
         const [username, password] = cookie.split(':')
         return {username, password}
-	console.log('username:', username)
-	console.log('password:', password)
     } catch (error) {
         console.error('[rpc-client] Failed to read cookie file:', error)
         return null
@@ -15,12 +13,12 @@ function readCookieFile(cookiePath: string): {username: string; password: string
 }
 
 const cookiePath = process.env['RPC_COOKIE']
-const credentials = readCookieFile(cookiePath)
+const credentials = cookiePath ? readCookieFile(cookiePath) : null
 
 export const rpcClient = new Client({
 	host: `http://${process.env['BITCOIND_IP'] || '127.0.0.1'}:${process.env['RPC_PORT'] || '8332'}`,
-	username: credentials?.username,
-	password: credentials?.password,
+	username: credentials?.username || 'umbrel',
+	password: credentials?.password || 'moneyprintergobrrr',
 })
 
 // Type for getgeneralinfo RPC response
