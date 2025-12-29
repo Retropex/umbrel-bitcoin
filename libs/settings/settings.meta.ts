@@ -8,7 +8,7 @@
 // IMPORTANT:
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
-export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.2.knots20251110','v29.2', 'v29.1'] as const
+export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.1'] as const
 
 // Default Bitcoin Knots version used by bitcoind manager (always the newest version in the array)
 export const DEFAULT_BITCOIN_KNOTS_VERSION = AVAILABLE_BITCOIN_KNOTS_VERSIONS[0]
@@ -361,10 +361,6 @@ export const settingsMetadata = {
 		subDescription: 'Note: datacarrier must be enabled for this setting to take effect.',
 		default: 42,
 		unit: 'bytes',
-		versionOverrides: {
-			// v29.2.knots20251110 changed the default and max so we declare a tiny diff
-			'v29.2.knots20251110': {default: 83},
-		},
 	},
 
 	permitbaremultisig: {

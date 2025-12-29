@@ -4,7 +4,7 @@ import copy from 'copy-to-clipboard'
 import {Copy, TriangleAlert, LockKeyhole, X as XIcon} from 'lucide-react'
 import {motion, AnimatePresence} from 'framer-motion'
 
-import UmbrelLogo from '@/assets/logo.svg?react'
+import UmbrelLogo from '@/assets/logo.png'
 
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert'
 import {
@@ -250,7 +250,7 @@ function QR({value}: {value?: string}) {
 			{/* Umbrel logo overlay */}
 			<div className='absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 p-2 shadow-md pointer-events-none select-none bg-[#1C1C1C]'>
 				<div className='w-full h-full flex items-center justify-center bg-white/10 rounded-md p-1.5'>
-					<UmbrelLogo className='w-full h-full text-white' />
+					<img src={UmbrelLogo} alt='Bitcoin Node logo' className='w-[50px] md:w-[25px] h-[50px] md:h-[25px] shrink-0 rounded-lg' />
 				</div>
 			</div>
 
