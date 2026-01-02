@@ -492,6 +492,21 @@ export const settingsMetadata = {
 		unit: 'MB',
 	},
 
+	uaspoof: {
+		tab: 'optimization',
+		kind: 'select',
+		label: 'User-Agent Spoofing',
+		bitcoinLabel: 'uaspoof',
+		description:
+			'Spoof the User-Agent string broadcasted on the P2P network to hide that you are running garbage-man.',
+		options: [
+			{value: '/Satoshi:29.1.0/', label: 'v29.1.0'},
+			{value: '/Satoshi:29.2.0/', label: 'v29.2.0'},
+			{value: '/Satoshi:30.0.0/', label: 'v30.0.0'},
+		],
+		default: '/Satoshi:29.1.0/',
+	},
+
 	// Fee policy settings (rates shown as sat/vB; converted to BTC/kvB when writing bitcoin.conf)
 	blockmintxfee: {
 		tab: 'policy',
