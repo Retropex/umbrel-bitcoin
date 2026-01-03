@@ -20,7 +20,18 @@ interface SaveSettingsDialogProps {
 
 const VersionPinningStatus = ({formVersion}: {formVersion: string}) => {
 	const isLatest = formVersion === LATEST
-
+	const isBIP110 = formVersion === 'v29.2.knots20251110+bip110'
+	
+	if (isBIP110) {
+		return (
+			<span className='bg-green-500/10 border border-green-500/20 rounded-md p-3 block'>
+				<span className='text-green-200 text-xs'>
+					You have chosen to signal the BIP110 with Bitcoin Knots.
+				</span>
+			</span>
+		)
+	}
+	
 	if (isLatest) {
 		return (
 			<span className='bg-green-500/10 border border-green-500/20 rounded-md p-3 block'>
