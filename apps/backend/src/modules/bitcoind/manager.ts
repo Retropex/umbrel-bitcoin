@@ -128,7 +128,7 @@ export class BitcoindManager {
 		try {
 			const firstLine = execFileSync(this.bin, ['--version']).toString().split('\n')[0]
 			const implementation = firstLine.replace(/(?:daemon|RPC client)?\s*version.*$/i, '').trim()
-			const version = (firstLine.match(/v\d+\.\d+(?:\.\d+)?(?:[.-][\w.]+)?/) ?? ['unknown'])[0]
+			const version = (firstLine.match(/v\d+\.\d+(?:\.\d+)?(?:\.knots\d+)?(?:\+[\w.-]+)?/) ?? ['unknown'])[0]
 			return {implementation, version}
 		} catch {
 			return {implementation: 'unknown', version: 'unknown'}
