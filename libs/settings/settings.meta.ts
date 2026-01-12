@@ -527,7 +527,7 @@ export const settingsMetadata = {
 		// Max derived from Knots MoneyRange(MAX_MONEY): 21,000,000 BTC/kvB → 2_100_000_000_000 sat/vB
 		// Knots rejects out-of-range values (errors on startup) and does not clamp.
 		max: 2_100_000_000_000,
-		step: 1,
+		step: 0.001,
 		unit: 'sat/vB',
 	},
 
