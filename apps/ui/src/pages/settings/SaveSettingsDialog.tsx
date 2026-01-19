@@ -20,7 +20,7 @@ interface SaveSettingsDialogProps {
 
 const VersionPinningStatus = ({formVersion}: {formVersion: string}) => {
 	const isLatest = formVersion === LATEST
-	const isBIP110 = formVersion === 'v29.2.knots20251110+bip110'
+	const isBIP110 = formVersion === 'BIP110'
 	
 	if (isBIP110) {
 		return (
