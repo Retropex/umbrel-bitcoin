@@ -13,6 +13,7 @@ import * as stats from './modules/stats/stats.js'
 import * as connect from './modules/connect/connect.js'
 import * as config from './modules/config/config.js'
 import * as widgets from './modules/widgets/widgets.js'
+import * as firstVisit from './modules/firstVisit/firstVisit.js'
 
 import {type SettingsSchema} from '#settings'
 
@@ -74,6 +75,10 @@ export default fp(async (app: FastifyInstance) => {
 		const savedLines = await config.updateCustomOptions(lines)
 		return {lines: savedLines}
 	})
+
+	const firstVisitBase = `${BASE}/first-visit`
+
+	app.get(`${firstVisitBase}/check`, () => firstVisit.checkAndMarkFirstVisit())
 
 	// umbrelOS widget routes
 	const widgetBase = `${BASE}/widget`
