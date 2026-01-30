@@ -15,7 +15,7 @@
 # Bitcoind
 ###########################################
 FROM ghcr.io/retropex/bitcoin:29.2.knots20251110@sha256:8b58084882c8abad948f2d154d46595a9147c1f4a5bd578ebabf68583905e305 AS bitcoind_29_2_2
-FROM ghcr.io/retropex/bitcoin:29.2.knots20251110-bip110-rc3@sha256:0ca5342902070b09f161d36e00fd0fadee93dec4de2cc107ba0bb03c54f70bb2 AS bip110
+FROM ghcr.io/retropex/bitcoin:29.2.knots20251110-bip110-v0.1@sha256:b575931fda6fc93420bc3bb33655923970662c44ae457df1e059546f12e90aa1 AS bip110
 FROM ghcr.io/retropex/bitcoin:29.2@sha256:2e3209117dd2d6ca5239d48fb44d71c218e99280ed180499f3036aff16a4b0f8 AS bitcoind_29_2
 FROM ghcr.io/retropex/bitcoin:29.1@sha256:da5bb600703a7ed885f64dbe93a5cd970138f28319f2074b51e3544e141711ed AS bitcoind_29_1
 
