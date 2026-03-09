@@ -14,6 +14,7 @@ import {cn} from '@/lib/utils'
 import {usePrefetchInsights} from '@/hooks/usePrefetchInsights'
 import {useBitcoindExitSocket} from '@/hooks/useBitcoindExitSocket'
 import {useFirstVisit} from '@/hooks/useFirstVisit'
+import {useBlockStream} from '@/hooks/useBlockStream'
 
 // React Router injects the routed page in <Outlet/>.
 export function Layout() {
@@ -41,6 +42,9 @@ export function Layout() {
 
 	// Listen for bitcoind exit events so we can show a toast notification if it crashes / has crashed
 	useBitcoindExitSocket()
+
+	// Single WebSocket for real-time block updates — feeds all block query caches
+	useBlockStream()
 
 	// Reset <main/> scroll position on page change
 	// Prevents unwanted scroll position on Settings page when Insights page has been scrolled
