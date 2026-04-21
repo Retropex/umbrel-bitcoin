@@ -19,7 +19,7 @@ export const VERSION_CHOICES = [LATEST, ...AVAILABLE_BITCOIN_KNOTS_VERSIONS] as 
 export type SelectedVersion = (typeof VERSION_CHOICES)[number]
 
 // Tabs for organization (used in the UI to group settings)
-export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'version' | 'advanced' | 'policy'
+export type Tab = 'peers' | 'policy' | 'optimization' | 'rpc-rest' | 'network' | 'version' | 'advanced'
 
 interface BaseOption {
 	tab: Tab
