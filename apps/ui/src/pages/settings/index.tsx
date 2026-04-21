@@ -422,7 +422,7 @@ export default function SettingsCard() {
 		resolver: versionedResolver as any,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
-		defaultValues: DefaultValuesForVersion(resolveVersion('latest')) as any,
+		defaultValues: (initialSettings as any) ?? (DefaultValuesForVersion(resolveVersion('latest')) as any),
 		shouldUnregister: false,
 	})
 
