@@ -4,7 +4,6 @@ import {useEffect, useRef, useState} from 'react'
 import {motion, useScroll, useTransform} from 'framer-motion'
 import {ErrorBoundary} from 'react-error-boundary'
 import ErrorFallback from '../shared/ErrorFallback'
-import WelcomePopup from '../shared/WelcomePopup'
 
 import Header from './Header'
 import Dock from './Dock'
@@ -13,24 +12,15 @@ import Background from './Background'
 import {cn} from '@/lib/utils'
 import {usePrefetchInsights} from '@/hooks/usePrefetchInsights'
 import {useBitcoindExitSocket} from '@/hooks/useBitcoindExitSocket'
-import {useFirstVisit} from '@/hooks/useFirstVisit'
 import {useBlockStream} from '@/hooks/useBlockStream'
 
 // React Router injects the routed page in <Outlet/>.
 export function Layout() {
 	const mainRef = useRef<HTMLElement>(null)
 	const [isAtTop, setIsAtTop] = useState(true)
-	const [showWelcomePopup, setShowWelcomePopup] = useState(false)
 
 	const {pathname} = useLocation()
 	const isSettingsPage = pathname.startsWith('/settings')
-	const isFirstVisit = useFirstVisit()
-
-	useEffect(() => {
-		if (isFirstVisit) {
-			setShowWelcomePopup(true)
-		}
-	}, [isFirstVisit])
 
 	// Map scroll progress of <main/> to a simple fade opacity (0 -> 1 over first ~3% scroll)
 	const {scrollYProgress} = useScroll({container: mainRef})
@@ -68,12 +58,6 @@ export function Layout() {
 
 	return (
 		<>
-			{/* Welcome popup on first visit */}
-			<WelcomePopup
-				isOpen={showWelcomePopup}
-				onClose={() => setShowWelcomePopup(false)}
-			/>
-
 			{/* Moving gradient background. This is fixed to the full-viewport and never scrolls */}
 			<Background />
 
