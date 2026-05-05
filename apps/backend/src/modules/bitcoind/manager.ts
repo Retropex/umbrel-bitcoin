@@ -5,7 +5,7 @@ import readline from 'node:readline'
 import fse from 'fs-extra'
 
 import type {ExitInfo} from '#types'
-import {DEFAULT_BITCOIN_KNOTS_VERSION} from '#settings'
+import {DEFAULT_BITCOIN_KNOTS_VERSION, AVAILABLE_BITCOIN_KNOTS_VERSIONS} from '#settings'
 
 import {
 	BITCOIND_BIN,
@@ -26,6 +26,24 @@ function getVersionFromSettings(): string {
 		}
 	} catch {}
 	return DEFAULT_BITCOIN_KNOTS_VERSION
+}
+
+// The consensusrules setting (and the RDTS requirement) was introduced in this version.
+// Any version at this index or newer (lower index, array is newest→oldest) requires consensusrules=rdts.
+const RDTS_INTRODUCED_VERSION = 'v29.3.knots20260508'
+
+function isRdtsVersion(version: string): boolean {
+	const versionIdx = AVAILABLE_BITCOIN_KNOTS_VERSIONS.indexOf(version as (typeof AVAILABLE_BITCOIN_KNOTS_VERSIONS)[number])
+	const introducedIdx = AVAILABLE_BITCOIN_KNOTS_VERSIONS.indexOf(RDTS_INTRODUCED_VERSION)
+	return versionIdx !== -1 && versionIdx <= introducedIdx
+}
+
+function getConsensusRulesFromSettings(): boolean {
+	try {
+		const json = fse.readJsonSync(SETTINGS_JSON)
+		return typeof json.consensusrules === 'boolean' ? json.consensusrules : false
+	} catch {}
+	return false
 }
 
 function isVersionInstalled(version: string): boolean {
@@ -160,6 +178,10 @@ export class BitcoindManager {
 			this.events.emit('exit', this.exitInfo)
 			return
 		}
+
+		// Block startup silently if the version requires RDTS but consensusrules is not set to rdts.
+		// The UI already shows a dialog prompting the user to enable RDTS, so no extra error is needed.
+		if (isRdtsVersion(version) && getConsensusRulesFromSettings() !== true) return
 
 		// flip the single pointer used by both daemon and CLI
 		execFileSync('ln', ['-sfn', `${BITCOIN_KNOTS_VERSIONS_DIR}/${version}`, BITCOIN_KNOTS_CURRENT_SYMLINK])
