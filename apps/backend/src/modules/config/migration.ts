@@ -5,7 +5,7 @@ import fse from 'fs-extra'
 import {ZodError} from 'zod'
 
 import {writeWithBackup} from './fs-helpers.js'
-import {APP_STATE_DIR} from '../../lib/paths.js'
+import {APP_STATE_DIR, SETTINGS_JSON} from '../../lib/paths.js'
 import {
 	schemaForVersion,
 	settingsMetadata,
@@ -160,6 +160,24 @@ export async function migrateLegacyConfig(): Promise<SettingsSchema | undefined>
 			throw new Error(`[migration] Validation of legacy config failed – ${summary}`)
 		}
 		throw new Error('[migration] Unexpected error during migration of legacy config', {cause: error as Error})
+	}
+}
+
+export async function migrateBip110() {
+	if (!(await fse.pathExists(SETTINGS_JSON))) return
+	
+	let config = await fse.readJson(SETTINGS_JSON).catch((err) => {
+		const msg =
+			err instanceof SyntaxError
+				? '[migration] Invalid JSON in legacy bitcoin-config.json'
+				: '[migration] Unable to read legacy bitcoin-config.json'
+		throw new Error(`${msg}: ${err.message}`)
+	})
+	
+	if (config.version === "BIP110") {
+		config.version = "latest"
+		config.consensusrules = true
+		await writeWithBackup(SETTINGS_JSON, JSON.stringify(config, null, 2) + '\n')
 	}
 }
 
