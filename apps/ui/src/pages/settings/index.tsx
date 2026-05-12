@@ -200,6 +200,7 @@ function FieldRenderer({
 				</div>
 				<p className='text-[13px] font-[400] text-white/60'>{option.description}</p>
 				{option.subDescription && <p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>}
+				{option.info && <p className='text-[12px] font-[400] text-white/60 mt-1'>{option.info}</p>}
 				<p className='text-[12px] font-[400] text-white/50  mt-2'>
 					default: {option.default} {option.unit}
 				</p>
@@ -246,6 +247,9 @@ function FieldRenderer({
 						<p className='text-[13px] font-[400] text-white/60'>{option.description}</p>
 						{option.subDescription && (
 							<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>
+						)}
+						{option.info && (
+							<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.info}</p>
 						)}
 						<p className='text-[12px] font-[400] text-white/50 mt-2'>
 							default: {option.default ? 'enabled' : 'disabled'}
@@ -310,6 +314,9 @@ function FieldRenderer({
 							<p className='text-[13px] font-[400] text-white/60'>{option.description}</p>
 							{option.subDescription && (
 								<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>
+							)}
+							{option.info && (
+								<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.info}</p>
 							)}
 							<p className='text-[12px] font-[400] text-white/50 mt-2'>
 								default: {option.default.length ? option.default.join(', ') : 'none'}
@@ -381,6 +388,9 @@ function FieldRenderer({
 						{option.subDescription && (
 							<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.subDescription}</p>
 						)}
+						{option.info && (
+							<p className='text-[12px] font-[400] text-white/60 mt-1'>{option.info}</p>
+						)}
 						<p className='text-[12px] font-[400] text-white/50 mt-2'>default: {option.default}</p>
 					</div>
 				)}
@@ -422,7 +432,7 @@ export default function SettingsCard() {
 		resolver: versionedResolver as any,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
-		defaultValues: DefaultValuesForVersion(resolveVersion('latest')) as any,
+		defaultValues: (initialSettings as any) ?? (DefaultValuesForVersion(resolveVersion('latest')) as any),
 		shouldUnregister: false,
 	})
 
@@ -557,12 +567,12 @@ export default function SettingsCard() {
 	// This array drives both the tab triggers (navigation) and tab content rendering
 	const tabs = [
 		{value: 'peers', label: 'Peer Settings'},
+		{value: 'policy', label: 'Policy'},
 		{value: 'optimization', label: 'Optimization'},
 		{value: 'rpc-rest', label: 'RPC and REST'},
 		{value: 'network', label: 'Network Selection'},
 		{value: 'version', label: 'Bitcoin Knots Version'},
 		{value: 'advanced', label: 'Advanced'},
-		{value: 'policy', label: 'Policy'},
 	] as const
 
 	return (

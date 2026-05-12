@@ -8,7 +8,7 @@
 // IMPORTANT:
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
-export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.3.knots20260210', 'v29.2.knots20251110', 'BIP110','v29.2', 'v29.1'] as const
+export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.3.knots20260508', 'v29.3.knots20260507', 'v29.3.knots20260210', 'v29.2.knots20251110','v29.2', 'v29.1'] as const
 
 // Default Bitcoin Knots version used by bitcoind manager (always the newest version in the array)
 export const DEFAULT_BITCOIN_KNOTS_VERSION = AVAILABLE_BITCOIN_KNOTS_VERSIONS[0]
@@ -19,7 +19,7 @@ export const VERSION_CHOICES = [LATEST, ...AVAILABLE_BITCOIN_KNOTS_VERSIONS] as 
 export type SelectedVersion = (typeof VERSION_CHOICES)[number]
 
 // Tabs for organization (used in the UI to group settings)
-export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'version' | 'advanced' | 'policy'
+export type Tab = 'peers' | 'policy' | 'optimization' | 'rpc-rest' | 'network' | 'version' | 'advanced'
 
 interface BaseOption {
 	tab: Tab
@@ -28,6 +28,7 @@ interface BaseOption {
 	bitcoinLabel: string
 	description: string
 	subDescription?: string
+	info?: string
 }
 
 interface NumberOption extends BaseOption {
@@ -363,9 +364,10 @@ export const settingsMetadata = {
 		unit: 'bytes',
 		versionOverrides: {
 			// v29.2.knots20251110 changed the default and max so we declare a tiny diff
+			'v29.3.knots20260508': {default: 83},
+			'v29.3.knots20260507': {default: 83},
 			'v29.3.knots20260210': {default: 83},
 			'v29.2.knots20251110': {default: 83},
-			'BIP110': {default: 83},
 		},
 	},
 
@@ -634,6 +636,18 @@ export const settingsMetadata = {
 			...AVAILABLE_BITCOIN_KNOTS_VERSIONS.map((version) => ({value: version, label: version})),
 		],
 		default: LATEST,
+	},
+	
+	consensusrules: {
+		tab: 'version',
+		kind: 'toggle',
+		label: 'Consensus rules',
+		bitcoinLabel: 'consensusrules',
+		description: 'Enforce the RDTS consensus rules. Must be enabled to use this software',
+		subDescription: 'Important: Because this upgrade already has broad community support, skipping this update or reverting to an older software version does not reject it. Running outdated software after any network upgrade only leaves your node vulnerable to displaying fake or fraudulent transactions. To effectively reject this upgrade, you need to run alternative software designed to split away from the upgraded network. You can learn more about RDTS here: https://bitcoinknots.org/learn/2026-rdts',
+		info: 'If you are not ready to adopt the RDTS upgrade yet, you can alternatively switch to the version v29.3.knots20260507 which is the same version of Bitcoin Knots without RDTS support (NOT RECOMMENDED).',
+		default: false,
+		introducedIn: 'v29.3.knots20260508',
 	},
 
 	/* ===== Network tab ===== */

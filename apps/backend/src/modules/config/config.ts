@@ -16,7 +16,7 @@ import {
 	type SettingsSchema,
 	type SelectedVersion,
 } from '#settings'
-import {migrateLegacyConfig} from './migration.js'
+import {migrateBip110, migrateLegacyConfig} from './migration.js'
 
 const BITCOIN_CONF_INCLUDE_LINE = `includeconf=${path.basename(UMBREL_BITCOIN_CONF)}`
 
@@ -137,6 +137,14 @@ function generateBaseConfLines(settings: SettingsSchema): string[] {
 				if (value === true) {
 					lines.push("blocknotify=curl -s -m 5 http://datum_datum_1:21000/NOTIFY")
 				}
+				break
+			}
+
+			case 'consensusrules': {
+				if (value === true) {
+					lines.push("consensusrules=rdts")
+				}
+				break
 			}
 
 			// All other keys → default "key=value" (boolean→0|1, number/string as is)
@@ -355,6 +363,9 @@ export async function ensureConfig(): Promise<SettingsSchema> {
 
 	// Migrate legacy app's bitcoin-config.json to this app's settings.json if it exists
 	await migrateLegacyConfig()
+	
+	// migrate the BIP110 version to the latest version of Knots since it's now in Knots.
+	await migrateBip110()
 
 	// Write out settings.json
 	const settings = applyDerivedSettings(await loadAndValidateSettings())
