@@ -53,7 +53,7 @@ async function startTransactionSubscriber(): Promise<void> {
 
 	const sub = new zmq.Subscriber()
 	currentSubscriber = sub
-	sub.connect(`tcp://bitcoind.startos:${process.env['ZMQ_HASHTX_PORT'] || '28336'}`)
+	sub.connect(`tcp://${process.env['BITCOIND_IP'] || '127.0.0.1'}:${process.env['ZMQ_HASHTX_PORT'] || '28336'}`)
 	sub.subscribe('hashtx')
 
 	for await (const msg of sub) {
