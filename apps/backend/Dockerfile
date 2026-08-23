@@ -14,13 +14,7 @@
 ###########################################
 # Bitcoind
 ###########################################
-FROM ghcr.io/retropex/bitcoin:29.4.knots20260508@sha256:c8a561261565db77ef6a551013abd057d3e3ab9dea8535ba00a781b8d72d0619 AS bitcoind_29_4
-FROM ghcr.io/retropex/bitcoin:29.3.knots20260508@sha256:5dabd6ddb1eb47ab87ce5d2a1eb478472eedf2f5967993a824c3e25c6890df98 AS bitcoind_29_3_3
-FROM ghcr.io/retropex/bitcoin:29.3.knots20260507@sha256:366a8d1a939b002291a134aee6e03d1a10379f8dead646f8d30b296b88ee8380 AS bitcoind_29_3_2
-FROM ghcr.io/retropex/bitcoin:29.3.knots20260210@sha256:fde0aeddc8fd04818e91e185c9eb43980b5d1a132bdc4bdcb681b20b1fad0b94 AS bitcoind_29_3
-FROM ghcr.io/retropex/bitcoin:29.2.knots20251110@sha256:8b58084882c8abad948f2d154d46595a9147c1f4a5bd578ebabf68583905e305 AS bitcoind_29_2_2
-FROM ghcr.io/retropex/bitcoin:29.2@sha256:2e3209117dd2d6ca5239d48fb44d71c218e99280ed180499f3036aff16a4b0f8 AS bitcoind_29_2
-FROM ghcr.io/retropex/bitcoin:29.1@sha256:da5bb600703a7ed885f64dbe93a5cd970138f28319f2074b51e3544e141711ed AS bitcoind_29_1
+FROM ghcr.io/retropex/bitcoin:29.4.1.knots20260508rc2@sha256:87c06ed34ee5b0477164f7e55dca7bca0d71d4604cea29a70e895238e756fd2f AS bitcoind_29_4_1
 
 ##########################################################
 # Dependencies layer — install every workspace deps
@@ -52,28 +46,16 @@ WORKDIR /repo/apps/backend
 VOLUME /data
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.knots20260508 /opt/bitcoind/v29.3.knots20260508 /opt/bitcoind/v29.3.knots20260507 /opt/bitcoind/v29.3.knots20260210 /opt/bitcoind/v29.2.knots20251110 /opt/bitcoind/v29.2 /opt/bitcoind/v29.1
-COPY --from=bitcoind_29_4 /bin/bitcoind    /opt/bitcoind/v29.4.knots20260508/bitcoind
-COPY --from=bitcoind_29_4 /bin/bitcoin-cli /opt/bitcoind/v29.4.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260508/bitcoind
-COPY --from=bitcoind_29_3_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_2 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260507/bitcoind
-COPY --from=bitcoind_29_3_2 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260507/bitcoin-cli
-COPY --from=bitcoind_29_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260210/bitcoind
-COPY --from=bitcoind_29_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260210/bitcoin-cli
-COPY --from=bitcoind_29_2_2 /bin/bitcoind    /opt/bitcoind/v29.2.knots20251110/bitcoind
-COPY --from=bitcoind_29_2_2 /bin/bitcoin-cli /opt/bitcoind/v29.2.knots20251110/bitcoin-cli
-COPY --from=bitcoind_29_2 /bin/bitcoind    /opt/bitcoind/v29.2/bitcoind
-COPY --from=bitcoind_29_2 /bin/bitcoin-cli /opt/bitcoind/v29.2/bitcoin-cli
-COPY --from=bitcoind_29_1 /bin/bitcoind    /opt/bitcoind/v29.1/bitcoind
-COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
+RUN mkdir -p /opt/bitcoind/v29.4.1.knots20260508rc2
+COPY --from=bitcoind_29_4_1 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoind
+COPY --from=bitcoind_29_4_1 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoin-cli
 
 # Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
 # By default we point to the latest version of Bitcoin Knots
-RUN ln -sfn /opt/bitcoind/v29.4.knots20260508 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/v29.4.1.knots20260508rc2 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
@@ -122,28 +104,16 @@ COPY --from=app-builder /repo/libs/settings/dist ./libs/settings/dist
 COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.knots20260508 /opt/bitcoind/v29.3.knots20260508 /opt/bitcoind/v29.3.knots20260507 /opt/bitcoind/v29.3.knots20260210 /opt/bitcoind/v29.2.knots20251110 /opt/bitcoind/v29.2 /opt/bitcoind/v29.1
-COPY --from=bitcoind_29_4 /bin/bitcoind    /opt/bitcoind/v29.4.knots20260508/bitcoind
-COPY --from=bitcoind_29_4 /bin/bitcoin-cli /opt/bitcoind/v29.4.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260508/bitcoind
-COPY --from=bitcoind_29_3_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260508/bitcoin-cli
-COPY --from=bitcoind_29_3_2 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260507/bitcoind
-COPY --from=bitcoind_29_3_2 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260507/bitcoin-cli
-COPY --from=bitcoind_29_3 /bin/bitcoind    /opt/bitcoind/v29.3.knots20260210/bitcoind
-COPY --from=bitcoind_29_3 /bin/bitcoin-cli /opt/bitcoind/v29.3.knots20260210/bitcoin-cli
-COPY --from=bitcoind_29_2_2 /bin/bitcoind    /opt/bitcoind/v29.2.knots20251110/bitcoind
-COPY --from=bitcoind_29_2_2 /bin/bitcoin-cli /opt/bitcoind/v29.2.knots20251110/bitcoin-cli
-COPY --from=bitcoind_29_2 /bin/bitcoind    /opt/bitcoind/v29.2/bitcoind
-COPY --from=bitcoind_29_2 /bin/bitcoin-cli /opt/bitcoind/v29.2/bitcoin-cli
-COPY --from=bitcoind_29_1 /bin/bitcoind    /opt/bitcoind/v29.1/bitcoind
-COPY --from=bitcoind_29_1 /bin/bitcoin-cli /opt/bitcoind/v29.1/bitcoin-cli
+RUN mkdir -p /opt/bitcoind/v29.4.1.knots20260508rc2
+COPY --from=bitcoind_29_4_1 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoind
+COPY --from=bitcoind_29_4_1 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoin-cli
 
 # Give 1000:1000 write permisions to /opt/bitcoind (just directory) so we can flip the symbolic link while the container runs as 1000:1000
 RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
 # By default we point to the latest version of Bitcoin Knots
-RUN ln -sfn /opt/bitcoind/v29.4.knots20260508 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/v29.4.1.knots20260508rc2 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 

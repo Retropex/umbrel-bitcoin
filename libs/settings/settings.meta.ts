@@ -8,7 +8,7 @@
 // IMPORTANT:
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
-export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.4.knots20260508', 'v29.3.knots20260508', 'v29.3.knots20260507', 'v29.3.knots20260210', 'v29.2.knots20251110','v29.2', 'v29.1'] as const
+export const AVAILABLE_BITCOIN_KNOTS_VERSIONS = ['v29.4.1.knots20260508rc2'] as const
 
 // Default Bitcoin Knots version used by bitcoind manager (always the newest version in the array)
 export const DEFAULT_BITCOIN_KNOTS_VERSION = AVAILABLE_BITCOIN_KNOTS_VERSIONS[0]
@@ -364,11 +364,7 @@ export const settingsMetadata = {
 		unit: 'bytes',
 		versionOverrides: {
 			// v29.2.knots20251110 changed the default and max so we declare a tiny diff
-			'v29.4.knots20260508': {default: 83},
-			'v29.3.knots20260508': {default: 83},
-			'v29.3.knots20260507': {default: 83},
-			'v29.3.knots20260210': {default: 83},
-			'v29.2.knots20251110': {default: 83},
+			'v29.4.1.knots20260508rc2': {default: 83}
 		},
 	},
 
@@ -660,13 +656,10 @@ export const settingsMetadata = {
 		description:
 			'Choose which blockchain your node will connect to. If you change the chain, you may need to restart any connected apps to ensure they work correctly.',
 		options: [
-			{value: 'main', label: 'Mainnet'},
-			{value: 'test', label: 'Testnet3'},
 			{value: 'testnet4', label: 'Testnet4'},
-			{value: 'signet', label: 'Signet'},
 			{value: 'regtest', label: 'Regtest'},
 		],
-		default: 'main',
+		default: 'testnet4',
 	},
 } satisfies Record<string, VersionedOption>
 
