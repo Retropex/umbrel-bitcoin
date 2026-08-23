@@ -633,17 +633,6 @@ export const settingsMetadata = {
 		],
 		default: LATEST,
 	},
-	
-	consensusrules: {
-		tab: 'version',
-		kind: 'toggle',
-		label: 'Consensus rules',
-		bitcoinLabel: 'consensusrules',
-		description: 'Enforce the RDTS consensus rules. Must be enabled to use this software',
-		subDescription: 'You can learn more about RDTS here: https://bitcoinknots.org/learn/2026-rdts',
-		default: false,
-		introducedIn: 'v29.3.knots20260508',
-	},
 
 	/* ===== Network tab ===== */
 	chain: {
