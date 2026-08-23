@@ -135,7 +135,7 @@ function generateBaseConfLines(settings: SettingsSchema): string[] {
 			
 			case 'datum': {
 				if (value === true) {
-					lines.push("blocknotify=curl -s -m 5 http://datum_datum_1:21000/NOTIFY")
+					lines.push("blocknotify=curl -s -m 5 http://btc-datum_datum_1:21009/NOTIFY")
 				}
 			}
 
