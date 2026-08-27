@@ -14,6 +14,7 @@
 ###########################################
 # Bitcoind
 ###########################################
+FROM ghcr.io/retropex/bitcoin:29.4.1.knots20260508rc3@sha256:ad0d63fbe88a3e158a960630aa3791c809133694239515ec10e476fbc3e8ea2f AS bitcoind_29_4_2
 FROM ghcr.io/retropex/bitcoin:29.4.1.knots20260508rc2@sha256:87c06ed34ee5b0477164f7e55dca7bca0d71d4604cea29a70e895238e756fd2f AS bitcoind_29_4_1
 
 ##########################################################
@@ -46,7 +47,9 @@ WORKDIR /repo/apps/backend
 VOLUME /data
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.1.knots20260508rc2
+RUN mkdir -p /opt/bitcoind/v29.4.1.knots20260508rc3 /opt/bitcoind/v29.4.1.knots20260508rc2
+COPY --from=bitcoind_29_4_2 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc3/bitcoind
+COPY --from=bitcoind_29_4_2 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc3/bitcoin-cli
 COPY --from=bitcoind_29_4_1 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoind
 COPY --from=bitcoind_29_4_1 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoin-cli
 
@@ -55,7 +58,7 @@ RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
 # By default we point to the latest version of Bitcoin Knots
-RUN ln -sfn /opt/bitcoind/v29.4.1.knots20260508rc2 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/v29.4.1.knots20260508rc3 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
@@ -104,7 +107,9 @@ COPY --from=app-builder /repo/libs/settings/dist ./libs/settings/dist
 COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 
 # bitcoind binaries
-RUN mkdir -p /opt/bitcoind/v29.4.1.knots20260508rc2
+RUN mkdir -p /opt/bitcoind/v29.4.1.knots20260508rc3 /opt/bitcoind/v29.4.1.knots20260508rc2
+COPY --from=bitcoind_29_4_2 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc3/bitcoind
+COPY --from=bitcoind_29_4_2 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc3/bitcoin-cli
 COPY --from=bitcoind_29_4_1 /bin/bitcoind    /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoind
 COPY --from=bitcoind_29_4_1 /bin/bitcoin-cli /opt/bitcoind/v29.4.1.knots20260508rc2/bitcoin-cli
 
@@ -113,7 +118,7 @@ RUN chown 1000:1000 /opt/bitcoind
 
 # Symbolic link for default bitcoind binary
 # By default we point to the latest version of Bitcoin Knots
-RUN ln -sfn /opt/bitcoind/v29.4.1.knots20260508rc2 /opt/bitcoind/current
+RUN ln -sfn /opt/bitcoind/v29.4.1.knots20260508rc3 /opt/bitcoind/current
 RUN ln -sfn /opt/bitcoind/current/bitcoind    /usr/local/bin/bitcoind
 RUN ln -sfn /opt/bitcoind/current/bitcoin-cli /usr/local/bin/bitcoin-cli
 
