@@ -16,7 +16,6 @@ import GlobeInfo from './GlobeInfo'
 import {useBitcoindStatus} from '@/hooks/useBitcoind'
 import {useSyncStatus} from '@/hooks/useSyncStatus'
 import {calcSyncPercent, syncStage} from '@/lib/sync-progress'
-import ConsensusRulesNotice from '@/components/ConsensusRulesNotice'
 
 export default function HomePage() {
 	const {data: status, isError, isLoading: isStatusLoading} = useBitcoindStatus()
@@ -96,7 +95,6 @@ export default function HomePage() {
 
 	return (
 		<>
-			<ConsensusRulesNotice />
 			<Card className='bg-card-gradient backdrop-blur-2xl border-none mb-5 pt-4 pb-0 md:pb-4 rounded-3xl'>
 				<GradientBorderTopBottom depth='7%' />
 				<CardContent className='flex flex-col md:flex-row px-4 items-center'>
