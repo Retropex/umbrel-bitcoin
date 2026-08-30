@@ -28,7 +28,6 @@ interface BaseOption {
 	bitcoinLabel: string
 	description: string
 	subDescription?: string
-	info?: string
 }
 
 interface NumberOption extends BaseOption {
@@ -645,8 +644,7 @@ export const settingsMetadata = {
 		label: 'Consensus rules',
 		bitcoinLabel: 'consensusrules',
 		description: 'Enforce the RDTS consensus rules. Must be enabled to use this software',
-		subDescription: 'Important: Because this upgrade already has broad community support, skipping this update or reverting to an older software version does not reject it. Running outdated software after any network upgrade only leaves your node vulnerable to displaying fake or fraudulent transactions. To effectively reject this upgrade, you need to run alternative software designed to split away from the upgraded network. You can learn more about RDTS here: https://bitcoinknots.org/learn/2026-rdts',
-		info: 'If you are not ready to adopt the RDTS upgrade yet, you can alternatively switch to the version v29.3.knots20260507 which is the same version of Bitcoin Knots without RDTS support (NOT RECOMMENDED).',
+		subDescription: 'You can learn more about RDTS here: https://bitcoinknots.org/learn/2026-rdts',
 		default: false,
 		introducedIn: 'v29.3.knots20260508',
 	},

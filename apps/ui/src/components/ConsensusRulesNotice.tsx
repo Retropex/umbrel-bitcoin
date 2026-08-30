@@ -40,16 +40,15 @@ export default function ConsensusRulesNotice() {
 					<div className='w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center'>
 						<TriangleAlert className='w-6 h-6 text-amber-500' />
 					</div>
-					<DialogTitle className='text-white text-lg'>Consensus rules change</DialogTitle>
+					<DialogTitle className='text-white text-lg'>Consensus Rules Required</DialogTitle>
 					<DialogDescription className='text-white/60 text-sm leading-relaxed'>
-						This version of Bitcoin Knots applies the BIP110 (RDTS) network upgrade, which fixes critical 
-						vulnerabilities in long-standing network design. To avoid applying this upgrade by accident, this 
-						version asks for explicit confirmation.
+						Bitcoin Knots requires RDTS consensus rules to be enabled in order to start. Please enable RDTS in your
+						settings to continue using your node.
 					</DialogDescription>
 				</DialogHeader>
 				<div className='flex flex-col sm:flex-row gap-3 mt-2'>
 					<Button
-						className='flex-1 cursor-pointer rounded-full bg-button-gradient backdrop-blur-xl bg-[#EE7032]/70 hover:bg-[#EE7032]/90 text-white/80 text-[13px] font-[500] border-0'
+						className='flex-1 cursor-pointer rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-[13px] font-[500] border-0'
 						onClick={() => window.open('https://bip110.org', '_blank', 'noopener,noreferrer')}
 					>
 						Learn More
