@@ -137,14 +137,6 @@ function generateBaseConfLines(settings: SettingsSchema): string[] {
 				if (value === true) {
 					lines.push("blocknotify=curl -s -m 5 http://datum_datum_1:21000/NOTIFY")
 				}
-				break
-			}
-
-			case 'consensusrules': {
-				if (value === true) {
-					lines.push("consensusrules=rdts")
-				}
-				break
 			}
 
 			// All other keys → default "key=value" (boolean→0|1, number/string as is)
