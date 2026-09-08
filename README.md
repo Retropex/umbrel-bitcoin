@@ -26,7 +26,7 @@
 
 ## Getting started
 
-This app can be installed in one click from the [Umbrel App Store](https://apps.umbrel.com/app/bitcoin).
+This app can be installed in one click from the [Umbrel App Store](https://apps.umbrel.com/app/bitcoin-knots).
 
 ---
 
