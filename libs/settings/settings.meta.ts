@@ -623,6 +623,18 @@ export const settingsMetadata = {
 		description:
 			'Enable blocknotify for datum to avoid mining stale work.',
 		default: true,
+		removedIn: 'v29.4.1.knots20260508rc4'
+	},
+
+	mineblake2: {
+		tab: 'optimization',
+		kind: 'toggle',
+		label: 'Enable blocknotify for datum (blake2b)',
+		bitcoinLabel: 'datumblake2',
+		description:
+			'Enable blocknotify for datum to avoid mining stale work.',
+		default: true,
+		introducedIn: 'v29.4.1.knots20260508rc4'
 	},
 
 	/* ===== Version tab ===== */
